@@ -17,17 +17,22 @@ MQTTConnection#processPublish()
 
 
 
-二、消息处理
-1.NewNettyMQTTHandler（消息处理器）
+## 二、消息处理
+### 1.NewNettyMQTTHandler（消息处理器）
 
-2.MQTTConnection（channel消息处理者）
+### 2.MQTTConnection（channel消息处理者）
 handleMessage()据消息类型分发处理
 processPublish 解释消息qos ，topic ，
 
-3.PostOffice(消息路由相关)
+### 3.PostOffice(消息路由相关)
 publish2Subscribers()发布到订阅者端
 
-4.ISubscriptionsDirectory
+### 4.ISubscriptionsDirectory
 matchQosSharpening(topic)获取匹配的订阅者
 Subscriptio 订阅者信息，包含clientId,qos,topc过滤器
+
+
+## 
+https://developers.google.com/protocol-buffers/
+https://github.com/google/protobuf/releases/
 
