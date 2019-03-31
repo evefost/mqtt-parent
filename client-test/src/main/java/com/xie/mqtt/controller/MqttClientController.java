@@ -3,11 +3,11 @@ package com.xie.mqtt.controller;
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xie.mqtt.netty.ClientOptions;
 import com.xie.mqtt.netty.MessageClient;
-import com.xie.mqtt.netty.MultiChannelClient;
+import com.xie.mqtt.netty.MessageClientFactory;
+import com.xie.mqtt.netty.SingletonClient;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
 import org.eclipse.paho.client.mqttv3.*;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -42,7 +41,7 @@ public class MqttClientController implements InitializingBean {
     String createNettyClient(int count) throws MqttException, InterruptedException {
         for (int i = 0; i < count; i++) {
             try {
-                MessageClient channel = multiChannelClient.getAndCreateChannel();
+                MessageClient channel = MessageClientFactory.getAndCreateChannel(options);
             } catch (InterruptedException e) {
                logger.error("连接通道失败");
             } catch (CloneNotSupportedException e) {
@@ -50,6 +49,12 @@ public class MqttClientController implements InitializingBean {
             }
         }
         return channels.size() + "";
+    }
+
+    @GetMapping("/create")
+    String createNettyClient() throws MqttException, InterruptedException, CloneNotSupportedException {
+        SingletonClient instance = SingletonClient.getInstance(options);
+        return instance.getClientId();
     }
 
 
@@ -60,7 +65,7 @@ public class MqttClientController implements InitializingBean {
     String send(String topic) throws MqttException {
         String topic2 = "/topic/client-"+topic;
         logger.debug("发布的topic:{}",topic2);
-        UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
+        UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
 
         MessageClient mqttClient = nettyChannels.get(r.nextInt(nettyChannels.size()));
         MqttPublishMessage publish = MqttMessageBuilders.publish()
@@ -76,7 +81,7 @@ public class MqttClientController implements InitializingBean {
     String broadcast() throws MqttException {
         String topic2 = "/topic/all";
         logger.debug("发布的topic:{}",topic2);
-        UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
+        UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
 
         MessageClient mqttClient = nettyChannels.get(r.nextInt(nettyChannels.size()));
         MqttPublishMessage publish = MqttMessageBuilders.publish()
@@ -88,14 +93,13 @@ public class MqttClientController implements InitializingBean {
         return "send success";
     }
 
-    private MultiChannelClient multiChannelClient;
-
+    ClientOptions options;
     @Override
     public void afterPropertiesSet() throws Exception {
-        ClientOptions options = new ClientOptions();
+        options = new ClientOptions();
         String[] nodes = {"127.0.0.1:1883"};
         options.setBrokerNodes(nodes);
-        multiChannelClient = new MultiChannelClient(options);
+
         new Thread(){
             @Override
             public void run() {
@@ -105,7 +109,7 @@ public class MqttClientController implements InitializingBean {
                    } catch (InterruptedException e) {
                        e.printStackTrace();
                    }
-                   UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
+                   UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
                    nettyChannels.forEach((c)->{
                        c.ping();
                    });

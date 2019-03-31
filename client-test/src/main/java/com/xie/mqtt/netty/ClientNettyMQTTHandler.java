@@ -33,17 +33,18 @@ import static io.netty.handler.codec.mqtt.MqttMessageType.*;
 public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientNettyMQTTHandler.class);
+
     public static final String ATTR_CLIENT_CHANNEL = "client_channel";
-    public static final AttributeKey<Object> ATTR_KEY_CLIENT_CHANNEL = AttributeKey.valueOf(ATTR_CLIENT_CHANNEL);
+
+    public static final AttributeKey<MessageClient> ATTR_KEY_CLIENT_CHANNEL = AttributeKey.valueOf(ATTR_CLIENT_CHANNEL);
 
 
-    private AtomicInteger clientCount = new AtomicInteger(0);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         MqttMessage msg = (MqttMessage) message;
         MqttFixedHeader mqttFixedHeader = msg.fixedHeader();
-        MessageClient mqttChannel = (MessageClient) ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
+        MessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
         if (mqttFixedHeader.messageType() == PUBLISH) {
             MqttPublishMessage publishMessage = (MqttPublishMessage) message;
             MqttPublishVariableHeader mqttPublishVariableHeader = publishMessage.variableHeader();
@@ -79,7 +80,7 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
             throws Exception {
-        ctx.fireExceptionCaught(cause);
+        ctx.close().addListener(CLOSE_ON_FAILURE);
         MessageClient client = getClient(ctx);
         if(client != null){
             client.onClosed(cause);
@@ -87,8 +88,7 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     }
 
     private MessageClient getClient(ChannelHandlerContext ctx){
-        MessageClient mqttChannel = (MessageClient) ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
-
+        MessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
         return mqttChannel;
     }
 

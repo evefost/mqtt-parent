@@ -18,12 +18,7 @@ package com.xie.mqtt.netty;
 
 import com.sun.javafx.UnmodifiableArrayList;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.mqtt.MqttDecoder;
-import io.netty.handler.codec.mqtt.MqttEncoder;
+import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,58 +32,23 @@ import static com.xie.mqtt.netty.ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL;
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use
  * the encoder/decoder part.
+ * @author xieyang
  */
-public class MultiChannelClient {
+public class MessageClientFactory {
 
 
-    private static final Logger LOG = LoggerFactory.getLogger(MultiChannelClient.class);
-
-    final ClientNettyMQTTHandler handler = new ClientNettyMQTTHandler();
-
-    EventLoopGroup workerGroup;
-
-    Bootstrap bootstrap;
+    private static final Logger logger = LoggerFactory.getLogger(MessageClientFactory.class);
 
 
-    List<MessageClient> nettyChannels = new ArrayList<>();
+    private static List<MessageClient> nettyChannels = new ArrayList<>();
 
-    private AtomicInteger clientCount = new AtomicInteger(0);
+    private static AtomicInteger clientCount = new AtomicInteger(0);
 
-    private ClientOptions options;
 
-    public MultiChannelClient(ClientOptions options) {
-        this.options = options;
-        this.init();
 
-    }
-
-    private void init(){
-
-        workerGroup = new NioEventLoopGroup(20);
-        try {
-            bootstrap = new Bootstrap();
-            bootstrap.group(workerGroup);
-            bootstrap.channel(NioSocketChannel.class);
-            bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
-            bootstrap.handler(new ChannelInitializer<SocketChannel>() {
-
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    ChannelPipeline pipeline = ch.pipeline();
-                    pipeline.addLast("decoder", new MqttDecoder());
-                    pipeline.addLast("encoder", MqttEncoder.INSTANCE);
-                    pipeline.addLast("handler", handler);
-                }
-            });
-        } catch (Exception ex) {
-            LOG.error("Error received in client setup", ex);
-            workerGroup.shutdownGracefully();
-        }
-    }
-
-    public MessageClient getAndCreateChannel() throws InterruptedException, CloneNotSupportedException {
-        ClientOptions.Node node = selectNode();
-
+    public static MessageClient getAndCreateChannel(ClientOptions options) throws InterruptedException, CloneNotSupportedException {
+        ClientOptions.Node node = selectNode(options);
+        Bootstrap bootstrap = NettyClientStarter.getInstance().getBootstrap();
         Channel channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
         String clientId = createClientId();
         String pointTopic="/topic/"+clientId;
@@ -98,7 +58,7 @@ public class MultiChannelClient {
         String[] topics = {pointTopic,broadcastTopic};
         clone.setTopics(topics);
         clone.setSelectNode(node);
-        MessageClient client = new MqttNettyClient(clone,clientId,channel,bootstrap);
+        MessageClient client = new MqttNettyClient(bootstrap,clone,clientId,channel);
         channel.attr(ATTR_KEY_CLIENT_CHANNEL).set(client);
         client.connect();
         nettyChannels.add(client);
@@ -106,19 +66,19 @@ public class MultiChannelClient {
     }
 
 
-    public UnmodifiableArrayList<MessageClient> getNettyChannels() {
+    public static UnmodifiableArrayList<MessageClient> getNettyChannels() {
         MessageClient[] array = new MessageClient[nettyChannels.size()];
         nettyChannels.toArray(array);
         return new UnmodifiableArrayList<>(array,array.length);
     }
 
-    public String createClientId(){
+    public static String createClientId(){
         String id = "client-"+clientCount.incrementAndGet();
         return id;
 
     }
 
-    private ClientOptions.Node selectNode(){
+    public static ClientOptions.Node selectNode(ClientOptions options){
         String node = null;
         if(options.getBrokerNodes().length==1){
             node = options.getBrokerNodes()[0];

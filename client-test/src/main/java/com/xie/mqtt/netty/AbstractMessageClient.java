@@ -16,27 +16,28 @@
 
 package com.xie.mqtt.netty;
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.xie.mqtt.netty.ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
+
 /**
- * Class used just to send and receive MQTT messages without any protocol login in action, just use
- * the encoder/decoder part.
  * @author xieyang
  */
 public abstract class AbstractMessageClient implements MessageClient {
 
 
-    protected   final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
 
     protected ClientOptions options;
@@ -47,8 +48,11 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     private AtomicInteger id = new AtomicInteger(0);
 
+    protected Bootstrap bootstrap;
 
-    public AbstractMessageClient(ClientOptions options,String clientId, Channel channel){
+
+    public AbstractMessageClient(Bootstrap bootstrap, ClientOptions options, String clientId, Channel channel) {
+        this.bootstrap = bootstrap;
         this.clientId = clientId;
         this.channel = channel;
         this.options = options;
@@ -62,23 +66,23 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     @Override
     public void subscript() {
-        logger.info("clientId[{}] 订阅主题:{}",clientId,options.getTopics());
+        logger.info("[{}] 订阅主题:{}", clientId, options.getTopics());
 
         MqttMessageBuilders.SubscribeBuilder subBuilder = MqttMessageBuilders.subscribe();
-        for(String t:options.getTopics()){
+        for (String t : options.getTopics()) {
             subBuilder.addSubscription(AT_MOST_ONCE, t);
         }
         MqttSubscribeMessage message = subBuilder.messageId(createMessageId()).build();
         channel.writeAndFlush(message);
     }
 
-    protected  int createMessageId(){
-       return id.incrementAndGet();
+    protected int createMessageId() {
+        return id.incrementAndGet();
     }
 
     @Override
     public void connect() {
-        logger.info("clientId[{}] 发起连接broker:",clientId);
+        logger.info("clientId[{}] 发起连接broker:", clientId);
         MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE,
                 false, 0);
         MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
@@ -86,7 +90,7 @@ public abstract class AbstractMessageClient implements MessageClient {
                 true, options.getKeepAlive());
         MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientId, null, null,
                 null, (byte[]) null);
-        MqttConnectMessage message =  new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
+        MqttConnectMessage message = new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
         send(message);
     }
 
@@ -94,8 +98,6 @@ public abstract class AbstractMessageClient implements MessageClient {
     public void send(MqttMessage mqttMessage) {
         channel.writeAndFlush(mqttMessage);
     }
-
-
 
 
     @Override
@@ -108,6 +110,43 @@ public abstract class AbstractMessageClient implements MessageClient {
     }
 
 
+    @Override
+    public void onClosed(Throwable cause) {
+        if (cause != null) {
+            logger.error("[{}]异常关闭", clientId, cause);
+        } else {
+            logger.warn("[{}]关闭", clientId);
+        }
+        if (options.isAutoReconnect()) {
+            if (!channel.isActive() && reconnectTimes<5) {
+                reconnectTimes++;
+                reconnect();
+            }
+        }
+    }
+
+    private int reconnectTimes ;
+
+    protected Random random = new Random();
+
+    protected void reconnect() {
+        try {
+            TimeUnit.SECONDS.sleep(random.nextInt(10));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        logger.info("[{}]重连=====>>>>", clientId);
+        ClientOptions.Node node = options.getSelectNode();
+        try {
+            channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
+            channel.attr(ATTR_KEY_CLIENT_CHANNEL).set(AbstractMessageClient.this);
+            connect();
+            reconnectTimes =0;
+        } catch (Exception e) {
+            logger.error("[{}]重连异常:", clientId, e);
+            onClosed(null);
+        }
+    }
 
 
 }
