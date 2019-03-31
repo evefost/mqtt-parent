@@ -1,8 +1,9 @@
-package com.xie.mqtt.client;
+package com.xie.mqtt.controller;
 
-import io.netty.bootstrap.Bootstrap;
+import com.sun.javafx.UnmodifiableArrayList;
+import com.xie.mqtt.netty.MessageClient;
+import com.xie.mqtt.netty.MultiChannelClient;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.*;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -19,7 +20,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -68,34 +68,17 @@ public class MqttClientController implements InitializingBean {
     }
 
     private AtomicInteger channelCount = new AtomicInteger(0);
-    private List<Channel> channels = new ArrayList<>();
+    private List<MessageClient> channels = new ArrayList<>();
+
     @GetMapping("/create/netty")
     String createNettyClient(int count) throws MqttException, InterruptedException {
-
-        Client client = new Client("localhost");
-
         for (int i = 0; i < count; i++) {
-
             try {
-                Channel channel = client.newChandler();
-                channels.add(channel);
+                MessageClient channel = multiChannelClient.getAndCreateChannel();
             } catch (InterruptedException e) {
                logger.error("连接通道失败");
             }
         }
-        Thread.sleep(1000L);
-        int id = 0;
-        for(Channel channel:channels) {
-            id++;
-            String topic = "/topic/"+id;
-            logger.debug("订阅的topic:{}",topic);
-            MqttSubscribeMessage subscribe = MqttMessageBuilders.subscribe()
-                    .addSubscription(AT_MOST_ONCE, topic)
-                    .messageId(id)
-                    .build();
-            channel.writeAndFlush(subscribe);
-        };
-
         return channels.size() + "";
     }
 
@@ -129,31 +112,53 @@ public class MqttClientController implements InitializingBean {
 
     @GetMapping("/send3")
     String sendMesage3(String topic) throws MqttException {
-        String topic2 = "/topic/"+topic;
+        String topic2 = "/topic/client-"+topic;
         logger.debug("发布的topic:{}",topic2);
-        Channel mqttClient = channels.get(r.nextInt(channels.size()));
+        UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
+
+        MessageClient mqttClient = nettyChannels.get(r.nextInt(nettyChannels.size()));
         MqttPublishMessage publish = MqttMessageBuilders.publish()
                 .topicName(topic2)
                 .retained(false)
                 .qos(MqttQoS.AT_MOST_ONCE)
                 .payload(Unpooled.copiedBuffer("Hello MQTT world!".getBytes(UTF_8))).build();
-        mqttClient.writeAndFlush(publish);
+        mqttClient.send(publish);
         return "send success";
     }
 
+    @GetMapping("/broadcast")
+    String broadcast() throws MqttException {
+        String topic2 = "/topic/all";
+        logger.debug("发布的topic:{}",topic2);
+        UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
+
+        MessageClient mqttClient = nettyChannels.get(r.nextInt(nettyChannels.size()));
+        MqttPublishMessage publish = MqttMessageBuilders.publish()
+                .topicName(topic2)
+                .retained(false)
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .payload(Unpooled.copiedBuffer("这是一条广播消息!".getBytes(UTF_8))).build();
+        mqttClient.send(publish);
+        return "send success";
+    }
+
+    private MultiChannelClient multiChannelClient;
+
     @Override
     public void afterPropertiesSet() throws Exception {
+        multiChannelClient = new MultiChannelClient("localhost",1883);
         new Thread(){
             @Override
             public void run() {
                while (true){
                    try {
-                       Thread.sleep(20000L);
+                       Thread.sleep(5000L);
                    } catch (InterruptedException e) {
                        e.printStackTrace();
                    }
-                   channels.forEach((c)->{
-                       c.writeAndFlush(pingMessage("aaa",20)).addListener(FIRE_EXCEPTION_ON_FAILURE);
+                   UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
+                   nettyChannels.forEach((c)->{
+                     //  c.send(pingMessage("aaa",60));
                    });
                }
             }

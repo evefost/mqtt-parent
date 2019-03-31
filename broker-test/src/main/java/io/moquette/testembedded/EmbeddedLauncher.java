@@ -54,7 +54,7 @@ public final class EmbeddedLauncher {
             payload.readBytes(content);
             final String decodedPayload = new String(content, UTF_8);
 
-            System.out.println("Received on topic: " + msg.getTopicName() + " content: " + decodedPayload);
+            System.out.println("收到消息发布 topic: " + msg.getTopicName() + " content: " + decodedPayload);
         }
     }
 

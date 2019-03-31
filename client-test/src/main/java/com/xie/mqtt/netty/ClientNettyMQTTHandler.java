@@ -14,28 +14,28 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package com.xie.mqtt.client;
+package com.xie.mqtt.netty;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.mqtt.*;
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
-import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
-import static io.netty.handler.codec.mqtt.MqttMessageType.PUBLISH;
-import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+import static io.netty.handler.codec.mqtt.MqttMessageType.*;
 
 @ChannelHandler.Sharable
-class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
+public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientNettyMQTTHandler.class);
-    private Client m_client;
+    public static final String ATTR_CLIENT_CHANNEL = "client_channel";
+    public static final AttributeKey<Object> ATTR_KEY_CLIENT_CHANNEL = AttributeKey.valueOf(ATTR_CLIENT_CHANNEL);
+
 
     private AtomicInteger clientCount = new AtomicInteger(0);
 
@@ -43,46 +43,35 @@ class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         MqttMessage msg = (MqttMessage) message;
         MqttFixedHeader mqttFixedHeader = msg.fixedHeader();
-        if(mqttFixedHeader.messageType()==PUBLISH){
+        MessageClient mqttChannel = (MessageClient) ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
+        if (mqttFixedHeader.messageType() == PUBLISH) {
             MqttPublishMessage publishMessage = (MqttPublishMessage) message;
             MqttPublishVariableHeader mqttPublishVariableHeader = publishMessage.variableHeader();
-            logger.info("收到消息:{}",mqttPublishVariableHeader.topicName());
-        }else {
+            logger.info("[{}]收到消息:{}", mqttChannel.getClientId(), mqttPublishVariableHeader.topicName());
+        } else if (mqttFixedHeader.messageType() == CONNACK) {
+
+            logger.info("[{}] 连接成功", mqttChannel.getClientId());
+            mqttChannel.subscript();
+
+        } else if (mqttFixedHeader.messageType() == SUBACK) {
+            logger.info("[{}] 订阅成功", mqttChannel.getClientId());
+
+        } else {
             logger.info("Received a message of type {}", msg.fixedHeader().messageType());
         }
-
-
-        //m_client.messageReceived(msg);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.debug("激活一个通道");
-        int keepAlive = 20; // secs
-        MqttConnectMessage connectMessage = createConnectMessage("device-"+clientCount.incrementAndGet(), keepAlive);
-        Channel channel = ctx.channel();
-        /*
-         * ConnectMessage connectMessage = new ConnectMessage();
-         * connectMessage.setProtocolVersion((byte) 3); connectMessage.setClientID("FAKECLNT");
-         * connectMessage.setKeepAlive(keepAlive);
-         */
-        channel.writeAndFlush(connectMessage).addListener(FIRE_EXCEPTION_ON_FAILURE);
+        logger.info("channel active");
 
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         logger.debug("通道关闭");
-        m_client.setConnectionLost(true);
         ctx.close().addListener(CLOSE_ON_FAILURE);
     }
-
-    void setClient(Client client) {
-        m_client = client;
-    }
-
-
-
 
 
     private static MqttConnectMessage createConnectMessage(String clientID, int keepAlive) {
