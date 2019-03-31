@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.xie.mqtt.netty.ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL;
@@ -48,17 +49,21 @@ public class MultiChannelClient {
 
     Bootstrap bootstrap;
 
-    private String host;
-
-    private int port;
 
     List<MessageClient> nettyChannels = new ArrayList<>();
 
     private AtomicInteger clientCount = new AtomicInteger(0);
 
-    public MultiChannelClient(String host, int port) {
-        this.host = host;
-        this.port = port;
+    private ClientOptions options;
+
+    public MultiChannelClient(ClientOptions options) {
+        this.options = options;
+        this.init();
+
+    }
+
+    private void init(){
+
         workerGroup = new NioEventLoopGroup(20);
         try {
             bootstrap = new Bootstrap();
@@ -81,12 +86,19 @@ public class MultiChannelClient {
         }
     }
 
-    public MessageClient getAndCreateChannel() throws InterruptedException {
-        Channel channel = bootstrap.connect(host, port).sync().channel();
+    public MessageClient getAndCreateChannel() throws InterruptedException, CloneNotSupportedException {
+        ClientOptions.Node node = selectNode();
+
+        Channel channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
         String clientId = createClientId();
         String pointTopic="/topic/"+clientId;
         String broadcastTopic = "/topic/all";
-        MessageClient client = new MqttNettyClient(clientId,channel,pointTopic,broadcastTopic);
+        ClientOptions clone = options.clone();
+        clone.setAutoReconnect(true);
+        String[] topics = {pointTopic,broadcastTopic};
+        clone.setTopics(topics);
+        clone.setSelectNode(node);
+        MessageClient client = new MqttNettyClient(clone,clientId,channel,bootstrap);
         channel.attr(ATTR_KEY_CLIENT_CHANNEL).set(client);
         client.connect();
         nettyChannels.add(client);
@@ -103,6 +115,22 @@ public class MultiChannelClient {
     public String createClientId(){
         String id = "client-"+clientCount.incrementAndGet();
         return id;
+
+    }
+
+    private ClientOptions.Node selectNode(){
+        String node = null;
+        if(options.getBrokerNodes().length==1){
+            node = options.getBrokerNodes()[0];
+        }else {
+            Random random = new Random();
+            node = options.getBrokerNodes()[random.nextInt(options.getBrokerNodes().length)];
+        }
+        String[] nodeInfo = node.split(":");
+        ClientOptions.Node node1 = new ClientOptions.Node();
+        node1.setHost(nodeInfo[0]);
+        node1.setPort(Integer.parseInt(nodeInfo[1]));
+        return node1;
 
     }
 

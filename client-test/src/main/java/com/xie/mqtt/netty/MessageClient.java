@@ -13,9 +13,13 @@ public interface MessageClient {
 
     void connect();
 
+    void ping();
+
     void send(MqttMessage msg);
 
     void onReceived(MqttMessage msg);
+
+    void onClosed(Throwable cause);
 
 
 }

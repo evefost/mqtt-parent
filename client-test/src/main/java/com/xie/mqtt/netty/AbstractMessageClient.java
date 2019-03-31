@@ -21,6 +21,9 @@ import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
@@ -33,18 +36,23 @@ import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 public abstract class AbstractMessageClient implements MessageClient {
 
 
-    protected final static AtomicInteger clientCount = new AtomicInteger(0);
-
     protected   final Logger logger = LoggerFactory.getLogger(getClass());
 
+
+    protected ClientOptions options;
 
     protected String clientId;
 
     protected Channel channel;
 
-    protected String[] topics;
-
     private AtomicInteger id = new AtomicInteger(0);
+
+
+    public AbstractMessageClient(ClientOptions options,String clientId, Channel channel){
+        this.clientId = clientId;
+        this.channel = channel;
+        this.options = options;
+    }
 
 
     @Override
@@ -54,10 +62,10 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     @Override
     public void subscript() {
-        logger.info("clientId[{}] 订阅主题:{}",clientId,topics);
+        logger.info("clientId[{}] 订阅主题:{}",clientId,options.getTopics());
 
         MqttMessageBuilders.SubscribeBuilder subBuilder = MqttMessageBuilders.subscribe();
-        for(String t:topics){
+        for(String t:options.getTopics()){
             subBuilder.addSubscription(AT_MOST_ONCE, t);
         }
         MqttSubscribeMessage message = subBuilder.messageId(createMessageId()).build();
@@ -71,12 +79,11 @@ public abstract class AbstractMessageClient implements MessageClient {
     @Override
     public void connect() {
         logger.info("clientId[{}] 发起连接broker:",clientId);
-        int keepAlive = 60;
         MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE,
                 false, 0);
         MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
                 MqttVersion.MQTT_3_1.protocolName(), MqttVersion.MQTT_3_1.protocolLevel(), false, false, false, 1, false,
-                true, keepAlive);
+                true, options.getKeepAlive());
         MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientId, null, null,
                 null, (byte[]) null);
         MqttConnectMessage message =  new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
@@ -88,10 +95,19 @@ public abstract class AbstractMessageClient implements MessageClient {
         channel.writeAndFlush(mqttMessage);
     }
 
+
+
+
     @Override
-    public void onReceived(MqttMessage msg) {
+    public void ping() {
+        MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGREQ, false, AT_MOST_ONCE,
+                false, 0);
+        MqttMessage pingReq = new MqttMessage(pingHeader);
+        send(pingReq);
 
     }
+
+
 
 
 }

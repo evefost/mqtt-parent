@@ -1,13 +1,13 @@
 package com.xie.mqtt.controller;
 
 import com.sun.javafx.UnmodifiableArrayList;
+import com.xie.mqtt.netty.ClientOptions;
 import com.xie.mqtt.netty.MessageClient;
 import com.xie.mqtt.netty.MultiChannelClient;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -33,42 +33,10 @@ public class MqttClientController implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(MqttClientController.class);
 
-
-    List<MqttClient> clients = new ArrayList<MqttClient>();
-
-    private AtomicInteger clientCount = new AtomicInteger(0);
-
-    @GetMapping("/create")
-    String createClient(int count) throws MqttException {
-
-
-        for (int i = 0; i < count; i++) {
-
-            MqttClient client = null;
-            try {
-                Thread.sleep(20L);
-                client = new MqttClient("tcp://localhost:1883", "device-" + clientCount.incrementAndGet(), new MemoryPersistence());
-
-                client.setCallback(new MessageCallback(client));
-                MqttConnectOptions options = new MqttConnectOptions();
-                options.setCleanSession(true);
-                client.connect(options);
-                String singleTopic = "/topic/"+clientCount.get();
-                String bordcastTopic = "/topic/all";
-                String[] topics = {singleTopic,bordcastTopic};
-                client.subscribe(topics);
-                clients.add(client);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        return clients.size() + "";
-    }
-
     private AtomicInteger channelCount = new AtomicInteger(0);
     private List<MessageClient> channels = new ArrayList<>();
+
+    private  Random r = new Random();
 
     @GetMapping("/create/netty")
     String createNettyClient(int count) throws MqttException, InterruptedException {
@@ -77,41 +45,19 @@ public class MqttClientController implements InitializingBean {
                 MessageClient channel = multiChannelClient.getAndCreateChannel();
             } catch (InterruptedException e) {
                logger.error("连接通道失败");
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
             }
         }
         return channels.size() + "";
     }
 
 
-    private static io.netty.handler.codec.mqtt.MqttMessage pingMessage(String clientID, int keepAlive) {
-        MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGREQ, false, AT_MOST_ONCE,
-                false, 0);
-        io.netty.handler.codec.mqtt.MqttMessage pingReq = new io.netty.handler.codec.mqtt.MqttMessage(pingHeader);
-        return pingReq;
-    }
 
-    Random r = new Random();
+
 
     @GetMapping("/send")
-    String sendMesage(String topic) throws MqttException {
-        MqttClient mqttClient = clients.get(r.nextInt(clients.size()));
-        mqttClient.publish("/topic/"+topic, "Test my payload".getBytes(UTF_8), 0, false);
-
-        return "send success";
-    }
-
-    @GetMapping("/send2")
-    String sendMesage2(String topic,int count) throws MqttException {
-        MqttClient mqttClient = clients.get(r.nextInt(clients.size()));
-        for(int i=0;i<count;i++){
-            mqttClient.publish("/topic/"+topic, "Test my payload".getBytes(UTF_8), 0, false);
-
-        }
-        return "send success";
-    }
-
-    @GetMapping("/send3")
-    String sendMesage3(String topic) throws MqttException {
+    String send(String topic) throws MqttException {
         String topic2 = "/topic/client-"+topic;
         logger.debug("发布的topic:{}",topic2);
         UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
@@ -146,7 +92,10 @@ public class MqttClientController implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        multiChannelClient = new MultiChannelClient("localhost",1883);
+        ClientOptions options = new ClientOptions();
+        String[] nodes = {"127.0.0.1:1883"};
+        options.setBrokerNodes(nodes);
+        multiChannelClient = new MultiChannelClient(options);
         new Thread(){
             @Override
             public void run() {
@@ -158,7 +107,7 @@ public class MqttClientController implements InitializingBean {
                    }
                    UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
                    nettyChannels.forEach((c)->{
-                       c.send(pingMessage("aaa",60));
+                       c.ping();
                    });
                }
             }
@@ -166,35 +115,5 @@ public class MqttClientController implements InitializingBean {
     }
 
 
-    private class MessageCallback implements MqttCallbackExtended {
-        private Logger logger = LoggerFactory.getLogger(MessageCallback.class);
-
-        private MqttClient client;
-
-        public MessageCallback(MqttClient client
-        ) {
-            this.client = client;
-        }
-
-        @Override
-        public void connectionLost(Throwable cause) {
-            logger.info("连接已断开:[{}]", client.getClientId());
-        }
-
-        @Override
-        public void messageArrived(String topic, MqttMessage message) throws Exception {
-            logger.info("收到消息[{}][{}]", client.getClientId(),topic);
-        }
-
-        @Override
-        public void deliveryComplete(IMqttDeliveryToken token) {
-            logger.info("发送完成");
-        }
-
-        @Override
-        public void connectComplete(boolean reconnect, String serverURI) {
-            logger.info("连接完成[{}] [{}]", client.getClientId(), reconnect);
-        }
-    }
 
 }

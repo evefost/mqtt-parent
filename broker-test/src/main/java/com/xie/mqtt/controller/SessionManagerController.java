@@ -72,4 +72,34 @@ public class SessionManagerController {
 
     }
 
+    @GetMapping("/close/client")
+    boolean closeClient(String clientId) throws MqttException {
+        Server mqttBroker = MqttBrokerApplication.mqttBroker;
+
+        SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
+
+        ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
+        Session session = sessions.get(clientId);
+        if(session == null){
+            return false;
+        }
+        session.closeImmediately();
+        return true;
+
+    }
+
+    @GetMapping("/close/all")
+    boolean closeAll() throws MqttException {
+        Server mqttBroker = MqttBrokerApplication.mqttBroker;
+
+        SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
+
+        ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
+        sessions.forEach((k,v)->{
+            v.closeImmediately();
+        });
+        return true;
+
+    }
+
 }

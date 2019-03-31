@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use
@@ -44,16 +45,17 @@ public class SingleChannelClient extends AbstractMessageClient {
 
     Bootstrap bootstrap;
 
-    private String host;
 
-    private int port;
-
-
-    public SingleChannelClient(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public SingleChannelClient(ClientOptions options, String clientId, Channel channel) {
+        super(options, clientId, channel);
+    }
 
 
+    public void start(){
+
+        String[] nodeInfo = selectNode();
+        String host = nodeInfo[0];
+        int port = Integer.parseInt(nodeInfo[1]);
         workerGroup = new NioEventLoopGroup(20);
         try {
             bootstrap = new Bootstrap();
@@ -77,6 +79,19 @@ public class SingleChannelClient extends AbstractMessageClient {
         }
     }
 
+    private String[] selectNode(){
+        String node = null;
+        if(options.getBrokerNodes().length==1){
+            node = options.getBrokerNodes()[0];
+        }else {
+            Random random = new Random();
+            node = options.getBrokerNodes()[random.nextInt(options.getBrokerNodes().length)];
+        }
+        String[] nodeInfo = node.split(":");
+        return nodeInfo;
+
+    }
+
     public SingleChannelClient clientId(String clientId) {
         this.clientId = clientId;
         return this;
@@ -86,6 +101,16 @@ public class SingleChannelClient extends AbstractMessageClient {
     @Override
     public String getClientId() {
         return clientId;
+    }
+
+    @Override
+    public void onReceived(MqttMessage msg) {
+
+    }
+
+    @Override
+    public void onClosed(Throwable cause) {
+
     }
 
 

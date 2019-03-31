@@ -50,7 +50,6 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
             logger.info("[{}]收到消息:{}", mqttChannel.getClientId(), mqttPublishVariableHeader.topicName());
             mqttChannel.onReceived(msg);
         } else if (mqttFixedHeader.messageType() == CONNACK) {
-
             logger.info("[{}] 连接成功", mqttChannel.getClientId());
             mqttChannel.subscript();
 
@@ -72,18 +71,25 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) {
         logger.debug("通道关闭");
         ctx.close().addListener(CLOSE_ON_FAILURE);
+        MessageClient client = getClient(ctx);
+        client.onClosed(null);
     }
 
 
-    private static MqttConnectMessage createConnectMessage(String clientID, int keepAlive) {
-        MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE,
-                false, 0);
-        MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
-                MqttVersion.MQTT_3_1.protocolName(), MqttVersion.MQTT_3_1.protocolLevel(), false, false, false, 1, false,
-                true, keepAlive);
-        MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientID, null, null,
-                null, (byte[]) null);
-        return new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+            throws Exception {
+        ctx.fireExceptionCaught(cause);
+        MessageClient client = getClient(ctx);
+        if(client != null){
+            client.onClosed(cause);
+        }
+    }
+
+    private MessageClient getClient(ChannelHandlerContext ctx){
+        MessageClient mqttChannel = (MessageClient) ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
+
+        return mqttChannel;
     }
 
 
