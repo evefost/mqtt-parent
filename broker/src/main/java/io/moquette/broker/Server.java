@@ -52,6 +52,10 @@ public class Server {
     private H2Builder h2Builder;
     private SessionRegistry sessions;
 
+    public SessionRegistry getSessionRegistry(){
+        return this.sessions;
+    }
+
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
         server.startServer();

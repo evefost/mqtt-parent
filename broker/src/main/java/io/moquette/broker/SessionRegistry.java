@@ -264,4 +264,8 @@ public class SessionRegistry {
         final Optional<InetSocketAddress> remoteAddressOpt = s.remoteAddress();
         return remoteAddressOpt.map(r -> new ClientDescriptor(clientID, r.getHostString(), r.getPort()));
     }
+
+    public ConcurrentMap<String, Session> getSessions(){
+        return pool;
+    }
 }

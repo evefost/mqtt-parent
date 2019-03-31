@@ -1,6 +1,7 @@
 package com.xie.mqtt.netty;
 
 import io.netty.channel.Channel;
+import io.netty.handler.codec.mqtt.MqttMessage;
 
 /**
  * created by xieyang on 19/3/31.
@@ -13,6 +14,7 @@ public class MqttNettyClient extends AbstractMessageClient {
         this.channel = channel;
         this.topics=topics;
     }
+
 
 
 }

@@ -152,13 +152,13 @@ public class MqttClientController implements InitializingBean {
             public void run() {
                while (true){
                    try {
-                       Thread.sleep(5000L);
+                       Thread.sleep(60000L);
                    } catch (InterruptedException e) {
                        e.printStackTrace();
                    }
                    UnmodifiableArrayList<MessageClient> nettyChannels = multiChannelClient.getNettyChannels();
                    nettyChannels.forEach((c)->{
-                     //  c.send(pingMessage("aaa",60));
+                       c.send(pingMessage("aaa",60));
                    });
                }
             }

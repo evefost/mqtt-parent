@@ -13,7 +13,9 @@ public interface MessageClient {
 
     void connect();
 
-    void send(MqttMessage mqttMessage);
+    void send(MqttMessage msg);
+
+    void onReceived(MqttMessage msg);
 
 
 }

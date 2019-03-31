@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-class Session {
+public class Session {
 
     private static final Logger LOG = LoggerFactory.getLogger(Session.class);
     private static final int FLIGHT_BEFORE_RESEND_MS = 5_000;

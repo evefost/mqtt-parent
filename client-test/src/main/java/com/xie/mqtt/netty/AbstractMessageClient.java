@@ -47,8 +47,6 @@ public abstract class AbstractMessageClient implements MessageClient {
     private AtomicInteger id = new AtomicInteger(0);
 
 
-
-
     @Override
     public String getClientId() {
         return clientId;
@@ -73,7 +71,7 @@ public abstract class AbstractMessageClient implements MessageClient {
     @Override
     public void connect() {
         logger.info("clientId[{}] 发起连接broker:",clientId);
-        int keepAlive = 5;
+        int keepAlive = 60;
         MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE,
                 false, 0);
         MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
@@ -88,6 +86,11 @@ public abstract class AbstractMessageClient implements MessageClient {
     @Override
     public void send(MqttMessage mqttMessage) {
         channel.writeAndFlush(mqttMessage);
+    }
+
+    @Override
+    public void onReceived(MqttMessage msg) {
+
     }
 
 
