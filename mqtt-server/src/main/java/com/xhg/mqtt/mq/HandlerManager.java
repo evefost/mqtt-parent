@@ -2,6 +2,7 @@ package com.xhg.mqtt.mq;
 
 
 import com.xhg.mqtt.mq.handler.AbstractHandler;
+import com.xhg.mqtt.mq.handler.up.DeviceConnectHandler;
 import com.xhg.mqtt.mq.handler.up.DeviceDefaultHandler;
 import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
@@ -32,6 +33,15 @@ public class HandlerManager implements SmartInitializingSingleton, ApplicationCo
     private  static AbstractHandler defaultHandler;
 
     private ApplicationContext applicationContext;
+
+    public static <H extends AbstractHandler> H getHandler(Class<H> clazz) {
+        for (AbstractHandler handler : handlers) {
+            if (handler instanceof DeviceConnectHandler) {
+                return (H) handler;
+            }
+        }
+        return null;
+    }
 
     public final static void process(Message message) {
         boolean matchHandler = false;

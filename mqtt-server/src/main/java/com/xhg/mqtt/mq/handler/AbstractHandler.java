@@ -37,7 +37,7 @@ public abstract class AbstractHandler<M extends Message> implements Handler{
 
     @Override
     public boolean support(Message message) {
-        MqttHead head = message.getMqttMessage().getHead();
+        MqttHead head = message.getBuzMessage().getHead();
         POINT from = message.getFrom();
         if( getEventCode().equals(head.getEventCode())&& getPoint().equals(from)){
             return true;
@@ -142,7 +142,7 @@ public abstract class AbstractHandler<M extends Message> implements Handler{
 
 
     protected   boolean isNeedAck(Message message){
-        MqttMessage mqttMessage = message.getMqttMessage();
+        MqttMessage mqttMessage = message.getBuzMessage();
         int cc = mqttMessage.getHead().getCc();
         return 1==cc;
     }

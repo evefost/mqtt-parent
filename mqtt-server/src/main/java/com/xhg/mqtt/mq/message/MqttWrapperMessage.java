@@ -1,7 +1,7 @@
 package com.xhg.mqtt.mq.message;
 
 
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttMessage;
 
 public class MqttWrapperMessage extends Message<MqttMessage> {
 

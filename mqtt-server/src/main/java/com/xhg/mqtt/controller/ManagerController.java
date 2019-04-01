@@ -1,7 +1,6 @@
 package com.xhg.mqtt.controller;
 
-import com.xhg.mqtt.MqttApplication;
-import io.moquette.broker.Server;
+import com.xhg.mqtt.mq.SessionManager;
 import io.moquette.broker.Session;
 import io.moquette.broker.SessionRegistry;
 import io.moquette.broker.subscriptions.Subscription;
@@ -10,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,25 +19,23 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("admin")
-public class SessionManagerController {
+public class ManagerController {
 
 
-    private static final Logger logger = LoggerFactory.getLogger(SessionManagerController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ManagerController.class);
 
+
+    @Autowired
+    private SessionManager sessionManager;
 
     @GetMapping("/sessions/ByPage")
     Page<SessionClient> getSessionsByPage(int currentPage, int pageSize)  {
-        Server mqttBroker = MqttApplication.mqttBroker;
 
-        SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
+        SessionRegistry sessionRegistry = sessionManager.getSessionRegistry();
         ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
         List<Session> sessionList = new ArrayList<>(sessions.values());
-
-
         Page<SessionClient>   page = new Page<>(new ArrayList<>(0),pageSize);
-
         if (sessionList.isEmpty()) {
-
             return page;
         }
         Page<Session> temPage = new Page<>(sessionList, pageSize);
@@ -66,8 +64,7 @@ public class SessionManagerController {
 
     @GetMapping("/close/client")
     boolean closeClient(String clientId) {
-        Server mqttBroker = MqttApplication.mqttBroker;
-        SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
+        SessionRegistry sessionRegistry = sessionManager.getSessionRegistry();
         ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
         Session session = sessions.get(clientId);
         if(session == null){
@@ -80,8 +77,7 @@ public class SessionManagerController {
 
     @GetMapping("/close/all")
     boolean closeAll() {
-        Server mqttBroker = MqttApplication.mqttBroker;
-        SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
+        SessionRegistry sessionRegistry = sessionManager.getSessionRegistry();
         ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
         sessions.forEach((k,v)->{
             v.closeImmediately();

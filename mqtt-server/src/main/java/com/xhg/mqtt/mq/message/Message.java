@@ -34,10 +34,20 @@ public class Message<S> {
      */
     private byte[] mqttPayload;
 
+    private String clientId;
+
     /**
      * payload解码后的消息
      */
-    private MqttMessagePb.MqttMessage mqttMessage;
+    private MqttMessagePb.MqttMessage buzMessage;
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
 
     public POINT getFrom() {
         return from;
@@ -79,11 +89,11 @@ public class Message<S> {
         this.mqttPayload = mqttPayload;
     }
 
-    public MqttMessage getMqttMessage() {
-        return mqttMessage;
+    public MqttMessage getBuzMessage() {
+        return buzMessage;
     }
 
-    public void setMqttMessage(MqttMessage mqttMessage) {
-        this.mqttMessage = mqttMessage;
+    public void setBuzMessage(MqttMessage buzMessage) {
+        this.buzMessage = buzMessage;
     }
 }

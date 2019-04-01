@@ -1,10 +1,10 @@
-package com.xhg.mqtt.mq.metrics;
+package com.xhg.mqtt.metrics;
 
 
 import com.xhg.mqtt.mq.MessageInputListener;
 import com.xhg.mqtt.mq.MessageOutputListener;
 import com.xhg.mqtt.mq.POINT;
-import com.xhg.mqtt.mq.client.ClientFactory;
+import com.xhg.mqtt.mq.SessionManager;
 import com.xhg.mqtt.mq.message.Message;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -27,6 +27,9 @@ public class MqttCountListener implements MessageInputListener,MessageOutputList
     private Counter outputCounter;
 
     private AtomicInteger channelCount;
+
+    @Autowired
+    private SessionManager sessionManager;
 
     @Override
     public void input(Message message) {
@@ -61,7 +64,7 @@ public class MqttCountListener implements MessageInputListener,MessageOutputList
     private void calculateChannelMessageRate(){
         long currentT = System.currentTimeMillis();
         if(currentT-statisticsWindown>lastCalculateTime){
-            int clientSize = ClientFactory.getClientSize(true)+ClientFactory.getClientSize(false);
+            int clientSize = sessionManager.getSessionRegistry().getSessions().size();
             double current = inputCounter.count() + outputCounter.count();
             double v = (current - lastValue) / (statisticsWindown/1000*clientSize);
             channelCount.set((int) v);

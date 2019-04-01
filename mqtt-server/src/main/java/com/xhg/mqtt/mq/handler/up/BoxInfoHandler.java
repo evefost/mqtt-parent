@@ -42,7 +42,7 @@ public class BoxInfoHandler extends AbstractUpHandler {
 
     @Override
     public BoxInfo parseMessageBody(MqttWrapperMessage message) {
-        MqttMessage mqttMessage = message.getMqttMessage();
+        MqttMessage mqttMessage = message.getBuzMessage();
         ByteString body = mqttMessage.getBody();
         BoxInfo boxInfo = null;
         try {

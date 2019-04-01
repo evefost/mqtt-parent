@@ -2,7 +2,6 @@ package com.xhg.mqtt.mq;
 
 
 import com.xhg.mqtt.mq.client.AbstractMessageClient;
-import com.xhg.mqtt.mq.client.ClientFactory;
 import com.xhg.mqtt.mq.client.MessageClient;
 import com.xhg.mqtt.mq.client.MqttConfig;
 import com.xhg.mqtt.mq.handler.AbstractHandler;
@@ -10,6 +9,7 @@ import com.xhg.mqtt.mq.handler.down.BroadcastMessage2DeviceHandler;
 import com.xhg.mqtt.mq.handler.down.MultiMessage2DeviceHandler;
 import com.xhg.mqtt.mq.handler.up.BoxInfoHandler;
 import com.xhg.mqtt.mq.handler.up.DeviceAddHandler;
+import com.xhg.mqtt.mq.handler.up.DeviceConnectHandler;
 import com.xhg.mqtt.mq.handler.up.DeviceDeleteHandler;
 import com.xhg.mqtt.mq.handler.up.DeviceLoginHandler;
 import com.xhg.mqtt.mq.handler.up.DeviceWillHandler;
@@ -50,18 +50,6 @@ public class MqttClientAutoConfig implements SmartInitializingSingleton {
             AbstractMessageClient.registerFailedListner(listener);
         }
 
-        //初始化mqtt客户端
-//        int consumerCount = mqttConfig.getConsumerCount();
-//        for (int i = 0; i < consumerCount; i++) {
-//            MessageClient client = ClientFactory.createClient(mqttConfig,true);
-//            ClientFactory.addClient(client,true);
-//        }
-//        int producerCount = mqttConfig.getProducerCount();
-//        for (int i = 0; i < producerCount; i++) {
-//            MessageClient client = ClientFactory.createClient(mqttConfig,false);
-//            ClientFactory.addClient(client,false);
-//        }
-
     }
 
 
@@ -94,6 +82,11 @@ public class MqttClientAutoConfig implements SmartInitializingSingleton {
     @Bean
     SiteInfoHandler siteInfoHandler(@Qualifier(value = "rocketMqClient") MessageClient client) {
         return new SiteInfoHandler(client);
+    }
+
+    @Bean
+    DeviceConnectHandler deviceConnectHandler(@Qualifier(value = "rocketMqClient") MessageClient client) {
+        return new DeviceConnectHandler(client);
     }
 
 

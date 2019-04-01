@@ -1,26 +1,30 @@
 package com.xhg.mqtt.mq;
 
-import java.util.concurrent.ConcurrentHashMap;
+import io.moquette.broker.Session;
+import io.moquette.broker.SessionRegistry;
+
+
 
 public class SessionManager {
 
-    public static ConcurrentHashMap<String,String> onlineClients = new ConcurrentHashMap<>();
+    private SessionRegistry sessionRegistry;
 
-
-    public static void add(String deviceId){
-        onlineClients.put(deviceId,deviceId);
+    public SessionRegistry getSessionRegistry() {
+        return sessionRegistry;
     }
 
-    public static ConcurrentHashMap<String,String> getonlineClients(){
-       return onlineClients;
+
+    public void setSessionRegistry(SessionRegistry sessionRegistry) {
+        this.sessionRegistry = sessionRegistry;
     }
 
-    public static void remove(String deviceId){
-        onlineClients.remove(deviceId);
+    public int getOnlineSize() {
+        return sessionRegistry.getSessions().size();
     }
 
-    public static int getOnlineCount(){
-        return onlineClients.size();
+    public Session getSession(Object clientId) {
+        return sessionRegistry.getSessions().get(clientId);
     }
+
 
 }

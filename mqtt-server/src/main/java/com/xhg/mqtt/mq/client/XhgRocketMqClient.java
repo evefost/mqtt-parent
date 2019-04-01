@@ -1,6 +1,5 @@
 package com.xhg.mqtt.mq.client;
 
-import com.xhg.core.util.crypto.Base64;
 import com.xhg.message.client.pojo.SendMsgResult;
 import com.xhg.message.client.pojo.SourceEvent;
 import com.xhg.message.client.support.MessagePublisher;
@@ -8,6 +7,7 @@ import com.xhg.message.client.support.SendMsgCallback;
 import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 import com.xhg.mqtt.mq.message.RocketMqBaseMessage;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

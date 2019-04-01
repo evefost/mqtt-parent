@@ -2,14 +2,13 @@ package com.xhg.mqtt.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.xhg.core.util.crypto.Base64;
-
 import com.xhg.message.client.annotation.Consumer;
 import com.xhg.message.client.annotation.Topic;
 import com.xhg.mqtt.mq.message.RocketMqMessage;
 import com.xhg.mqtt.mq.message.RocketWrapperMessage;
 import com.xhg.mqtt.mq.proto.MqttMessagePb;
 import io.micrometer.core.instrument.MeterRegistry;
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +49,8 @@ public class RocketMqMessageListener implements Decoder<RocketWrapperMessage> {
 		message.setMqttPayload(bytes);
 		try {
 			MqttMessagePb.MqttMessage mqttMessage = MqttMessagePb.MqttMessage.parseFrom(message.getMqttPayload());
-			message.setMqttMessage(mqttMessage);
-			if (logger.isDebugEnabled()) {
+            message.setBuzMessage(mqttMessage);
+            if (logger.isDebugEnabled()) {
 				logger.debug("解码rocket mq 消息:{}", mqttMessage.getHead());
 			}
 		} catch (InvalidProtocolBufferException e) {

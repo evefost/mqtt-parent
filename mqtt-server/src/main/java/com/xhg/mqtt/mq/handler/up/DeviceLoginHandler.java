@@ -3,7 +3,6 @@ package com.xhg.mqtt.mq.handler.up;
 
 import static com.xhg.mqtt.mq.EventCodeEnum.DEVICE_LOGIN;
 
-import com.xhg.mqtt.mq.SessionManager;
 import com.xhg.mqtt.mq.client.MessageClient;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 
@@ -26,10 +25,9 @@ public class DeviceLoginHandler  extends AbstractUpHandler {
     @Override
     protected void doProcess(MqttWrapperMessage message) {
         if(logger.isDebugEnabled()){
-            logger.debug("监听到设备上线deviceId[{}]",message.getMqttMessage().getHead().getDeviceId());
+            logger.debug("监听到设备上线deviceId[{}]", message.getBuzMessage().getHead().getDeviceId());
         }
-        String deviceId = message.getMqttMessage().getHead().getDeviceId();
-        SessionManager.add(deviceId);
+        String deviceId = message.getBuzMessage().getHead().getDeviceId();
 //        message.setTopic("xhg-order-device");
 //        client.publish(message);
     }

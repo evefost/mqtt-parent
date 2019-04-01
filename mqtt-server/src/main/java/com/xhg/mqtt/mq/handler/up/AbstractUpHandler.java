@@ -1,7 +1,6 @@
 package com.xhg.mqtt.mq.handler.up;
 
 
-;
 import static com.xhg.mqtt.mq.POINT.MQTT;
 
 import com.xhg.mqtt.mq.POINT;
@@ -10,9 +9,14 @@ import com.xhg.mqtt.mq.client.XhgMqttClient;
 import com.xhg.mqtt.mq.handler.AbstractHandler;
 import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
+import com.xhg.mqtt.mq.proto.MqttMessagePb;
 import com.xhg.mqtt.mq.proto.MqttMessagePb.MqttHead;
 import com.xhg.mqtt.mq.proto.MqttMessagePb.MqttMessage;
 import com.xhg.mqtt.mq.proto.MqttMessagePb.MqttMessage.Builder;
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.mqtt.MqttMessageBuilders;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -35,7 +39,7 @@ public abstract class AbstractUpHandler extends AbstractHandler<MqttWrapperMessa
     @Override
     protected void doAck(MqttWrapperMessage message) {
 
-        MqttMessage srcMsg = message.getMqttMessage();
+        MqttMessagePb.MqttMessage srcMsg = message.getBuzMessage();
         MqttHead srcHead = srcMsg.getHead();
         Builder messageBuilder = MqttMessage.newBuilder();
         MqttHead.Builder headBuilder = MqttHead.newBuilder();
@@ -52,12 +56,19 @@ public abstract class AbstractUpHandler extends AbstractHandler<MqttWrapperMessa
         if(logger.isDebugEnabled()){
             logger.debug("回应设备请求eventCode[{}] messageId[{}] ",srcHead.getEventCode(),srcMsg.getHead().getMessageId());
         }
-        Message<org.eclipse.paho.client.mqttv3.MqttMessage> replyMessage = new Message<>();
+        Message<io.netty.handler.codec.mqtt.MqttMessage> replyMessage = new Message<>();
+        replyMessage.setClientId(message.getClientId());
         replyMessage.setTopic(topic);
-        replyMessage.setMqttMessage(replyMqtt);
+        replyMessage.setBuzMessage(replyMqtt);
         replyMessage.setFrom(POINT.SERVER);
         replyMessage.setTo(MQTT);
         replyMessage.setMqttPayload(payload);
+        MqttPublishMessage publish = MqttMessageBuilders.publish()
+            .topicName(topic)
+            .retained(false)
+            .qos(MqttQoS.AT_MOST_ONCE)
+            .payload(Unpooled.copiedBuffer(payload)).build();
+        replyMessage.setSrcMessage(publish);
         xhgMqttClient.publish(replyMessage);
     }
 

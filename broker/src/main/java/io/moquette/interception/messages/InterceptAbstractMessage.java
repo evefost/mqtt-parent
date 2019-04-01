@@ -38,4 +38,9 @@ public abstract class InterceptAbstractMessage implements InterceptMessage {
     public MqttQoS getQos() {
         return msg.fixedHeader().qosLevel();
     }
+
+    public MqttMessage getMsg() {
+        return msg;
+    }
+
 }
