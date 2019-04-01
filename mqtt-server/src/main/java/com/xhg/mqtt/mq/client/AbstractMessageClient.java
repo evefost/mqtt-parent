@@ -1,8 +1,7 @@
 package com.xhg.mqtt.mq.client;
 
 
-import com.xhg.mqtt.mq.MessageFailedListener;
-import com.xhg.mqtt.mq.MessageOutputListener;
+import com.xhg.mqtt.mq.listener.MessageFailedListener;
 import com.xhg.mqtt.mq.message.Message;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,6 @@ public abstract class AbstractMessageClient<M extends Message> implements Messag
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static List<MessageOutputListener> listeners = new ArrayList<>();
 
     private static List<MessageFailedListener> failedListeners = new ArrayList<>();
     @Override
@@ -39,9 +37,7 @@ public abstract class AbstractMessageClient<M extends Message> implements Messag
 
 
     protected void doBefore(Message message) {
-        for (MessageOutputListener listener : listeners) {
-            listener.output(message);
-        }
+
     }
 
     private void doAfter(Message message) {
@@ -54,13 +50,6 @@ public abstract class AbstractMessageClient<M extends Message> implements Messag
 
     protected  abstract  <C> C choseClient();
 
-    public static void registerListner(MessageOutputListener listener) {
-        listeners.add(listener);
-    }
-
-    public static void unRegisterListener(MessageOutputListener listener) {
-        listeners.remove(listener);
-    }
 
     public static void registerFailedListner(MessageFailedListener listener) {
         failedListeners.add(listener);

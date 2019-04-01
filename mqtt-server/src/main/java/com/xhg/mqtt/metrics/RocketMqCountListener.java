@@ -1,8 +1,8 @@
 package com.xhg.mqtt.metrics;
 
 
-import com.xhg.mqtt.mq.MessageInputListener;
-import com.xhg.mqtt.mq.MessageOutputListener;
+import com.xhg.mqtt.mq.listener.MessageInputListener;
+import com.xhg.mqtt.mq.listener.MessageOutputListener;
 import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.RocketWrapperMessage;
 import io.micrometer.core.instrument.Counter;
@@ -15,7 +15,8 @@ import org.springframework.stereotype.Component;
  * 统计rocket mq消息出入
  */
 @Component
-public class RocketMqCountListener implements MessageInputListener,MessageOutputListener,InitializingBean {
+public class RocketMqCountListener implements MessageInputListener<Message>, MessageOutputListener<Message>,
+    InitializingBean {
 
     @Autowired
     private MeterRegistry registry;

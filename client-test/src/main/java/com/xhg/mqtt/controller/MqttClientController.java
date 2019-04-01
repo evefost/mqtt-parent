@@ -93,14 +93,16 @@ public class MqttClientController implements InitializingBean {
         String topic2 = "/topic/client-" + topic;
         logger.debug("发布的topic:{}", topic2);
         UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
-
-        MessageClient mqttClient = nettyChannels.get(r.nextInt(nettyChannels.size()));
+        MessageClient client = nettyChannels.get(r.nextInt(nettyChannels.size()));
+        Builder builder = buildBoxMessage(client.getClientId());
+        MqttMessage message = builder.build();
+        byte[] payload = message.toByteArray();
         MqttPublishMessage publish = MqttMessageBuilders.publish()
             .topicName(topic2)
             .retained(false)
             .qos(MqttQoS.AT_MOST_ONCE)
-            .payload(Unpooled.copiedBuffer("Hello MQTT world!".getBytes(UTF_8))).build();
-        mqttClient.send(publish);
+            .payload(Unpooled.copiedBuffer(payload)).build();
+        client.send(publish);
         return "send success";
     }
 
@@ -110,13 +112,16 @@ public class MqttClientController implements InitializingBean {
         logger.debug("发布的topic:{}", topic2);
         UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
 
-        MessageClient mqttClient = nettyChannels.get(r.nextInt(nettyChannels.size()));
+        MessageClient client = nettyChannels.get(r.nextInt(nettyChannels.size()));
+        Builder builder = buildBoxMessage(client.getClientId());
+        MqttMessage message = builder.build();
+        byte[] payload = message.toByteArray();
         MqttPublishMessage publish = MqttMessageBuilders.publish()
             .topicName(topic2)
             .retained(false)
             .qos(MqttQoS.AT_MOST_ONCE)
-            .payload(Unpooled.copiedBuffer("这是一条广播消息!".getBytes(UTF_8))).build();
-        mqttClient.send(publish);
+            .payload(Unpooled.copiedBuffer(payload)).build();
+        client.send(publish);
         return "send success";
     }
 

@@ -15,30 +15,42 @@
  */
 package io.moquette.broker;
 
+import static io.moquette.logging.LoggingUtils.getInterceptorIds;
+
 import io.moquette.BrokerConstants;
-import io.moquette.broker.config.*;
+import io.moquette.broker.config.FileResourceLoader;
+import io.moquette.broker.config.IConfig;
+import io.moquette.broker.config.IResourceLoader;
+import io.moquette.broker.config.MemoryConfig;
+import io.moquette.broker.config.ResourceLoaderConfig;
+import io.moquette.broker.listener.MqttListener;
+import io.moquette.broker.security.ACLFileParser;
+import io.moquette.broker.security.AcceptAllAuthenticator;
+import io.moquette.broker.security.DenyAllAuthorizatorPolicy;
+import io.moquette.broker.security.IAuthenticator;
+import io.moquette.broker.security.IAuthorizatorPolicy;
+import io.moquette.broker.security.PermitAllAuthorizatorPolicy;
+import io.moquette.broker.security.ResourceAuthenticator;
+import io.moquette.broker.subscriptions.CTrieSubscriptionDirectory;
+import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
+import io.moquette.interception.BrokerInterceptor;
 import io.moquette.interception.InterceptHandler;
 import io.moquette.persistence.H2Builder;
 import io.moquette.persistence.MemorySubscriptionsRepository;
-import io.moquette.interception.BrokerInterceptor;
-import io.moquette.broker.security.*;
-import io.moquette.broker.subscriptions.CTrieSubscriptionDirectory;
-import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
-import io.moquette.broker.security.IAuthenticator;
-import io.moquette.broker.security.IAuthorizatorPolicy;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import static io.moquette.logging.LoggingUtils.getInterceptorIds;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Server {
 
@@ -56,6 +68,8 @@ public class Server {
         return this.sessions;
     }
 
+
+    private MqttListener mqttListener;
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
         server.startServer();
@@ -64,6 +78,9 @@ public class Server {
         Runtime.getRuntime().addShutdownHook(new Thread(server::stopServer));
     }
 
+    public void setMqttListener(MqttListener mqttListener) {
+        this.mqttListener = mqttListener;
+    }
     /**
      * Starts Moquette bringing the configuration from the file located at m_config/moquette.conf
      *
@@ -188,7 +205,7 @@ public class Server {
                                                                             dispatcher);
 
         final NewNettyMQTTHandler mqttHandler = new NewNettyMQTTHandler(connectionFactory);
-        acceptor = new NewNettyAcceptor();
+        acceptor = new NewNettyAcceptor(mqttListener);
         acceptor.initialize(mqttHandler, config, sslCtxCreator);
 
         final long startTime = System.currentTimeMillis() - start;

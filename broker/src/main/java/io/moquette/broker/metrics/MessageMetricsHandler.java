@@ -16,6 +16,9 @@
 
 package io.moquette.broker.metrics;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
+import io.moquette.broker.listener.MqttListener;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,16 +26,17 @@ import io.netty.channel.ChannelPromise;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
-import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
-
 public class MessageMetricsHandler extends ChannelDuplexHandler {
 
     private static final AttributeKey<MessageMetrics> ATTR_KEY_METRICS = AttributeKey.valueOf("MessageMetrics");
 
     private MessageMetricsCollector m_collector;
 
-    public MessageMetricsHandler(MessageMetricsCollector collector) {
+    private MqttListener mqttListener;
+
+    public MessageMetricsHandler(MessageMetricsCollector collector, MqttListener mqttListener) {
         m_collector = collector;
+        this.mqttListener = mqttListener;
     }
 
     @Override
@@ -47,6 +51,7 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         metrics.incrementRead(1);
+        mqttListener.input(msg);
         ctx.fireChannelRead(msg);
     }
 
@@ -54,6 +59,7 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         metrics.incrementWrote(1);
+        mqttListener.output(msg);
         ctx.write(msg, promise).addListener(CLOSE_ON_FAILURE);
     }
 

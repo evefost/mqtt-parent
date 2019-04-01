@@ -3,8 +3,6 @@ package com.xhg.mqtt.mq;
 
 import com.xhg.mqtt.mq.client.AbstractMessageClient;
 import com.xhg.mqtt.mq.client.MessageClient;
-import com.xhg.mqtt.mq.client.MqttConfig;
-import com.xhg.mqtt.mq.handler.AbstractHandler;
 import com.xhg.mqtt.mq.handler.down.BroadcastMessage2DeviceHandler;
 import com.xhg.mqtt.mq.handler.down.MultiMessage2DeviceHandler;
 import com.xhg.mqtt.mq.handler.up.BoxInfoHandler;
@@ -14,6 +12,7 @@ import com.xhg.mqtt.mq.handler.up.DeviceDeleteHandler;
 import com.xhg.mqtt.mq.handler.up.DeviceLoginHandler;
 import com.xhg.mqtt.mq.handler.up.DeviceWillHandler;
 import com.xhg.mqtt.mq.handler.up.SiteInfoHandler;
+import com.xhg.mqtt.mq.listener.MessageFailedListener;
 import java.util.List;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +23,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MqttClientAutoConfig implements SmartInitializingSingleton {
 
-    @Autowired
-    private MqttConfig mqttConfig;
-
-    @Autowired
-    private List<MessageInputListener> inputListeners;
-
-    @Autowired
-    private List<MessageOutputListener> outputListeners;
 
     @Autowired
     private List<MessageFailedListener> failedListeners;
@@ -39,13 +30,6 @@ public class MqttClientAutoConfig implements SmartInitializingSingleton {
     @Override
     public void afterSingletonsInstantiated() {
         //注册消息监听器
-        for (MessageInputListener listener : inputListeners) {
-            AbstractHandler.registerListner(listener);
-        }
-        for (MessageOutputListener listener : outputListeners) {
-            AbstractMessageClient.registerListner(listener);
-        }
-
         for (MessageFailedListener listener : failedListeners) {
             AbstractMessageClient.registerFailedListner(listener);
         }

@@ -1,7 +1,6 @@
 package com.xhg.mqtt.mq.handler;
 
 import com.google.protobuf.AbstractMessage;
-import com.xhg.mqtt.mq.MessageInputListener;
 import com.xhg.mqtt.mq.POINT;
 import com.xhg.mqtt.mq.ProcessHook;
 import com.xhg.mqtt.mq.client.MessageClient;
@@ -26,8 +25,6 @@ public abstract class AbstractHandler<M extends Message> implements Handler{
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
     private static List<ProcessHook> hooks = new ArrayList<>();
-
-    private static List<MessageInputListener> listeners = new ArrayList<>();
 
     protected MessageClient client;
 
@@ -101,15 +98,6 @@ public abstract class AbstractHandler<M extends Message> implements Handler{
         hooks.remove(hook);
     }
 
-    public static void registerListner(MessageInputListener listener) {
-        listeners.add(listener);
-    }
-
-    public static void unRegisterListener(MessageInputListener listener) {
-        listeners.remove(listener);
-    }
-
-
 
     private void doAfter(M message) {
         for (ProcessHook hook : hooks) {
@@ -119,9 +107,6 @@ public abstract class AbstractHandler<M extends Message> implements Handler{
 
 
     protected void doBefore(M message) {
-        for (MessageInputListener listener : listeners) {
-            listener.input(message);
-        }
 
         for (ProcessHook hook : hooks) {
             hook.beforeProcess(message);

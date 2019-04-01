@@ -16,12 +16,37 @@
 
 package io.moquette.broker;
 
+import static io.moquette.BrokerConstants.BUGSNAG_ENABLE_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.DISABLED_PORT_BIND;
+import static io.moquette.BrokerConstants.METRICS_ENABLE_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.PORT_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.SSL_PORT_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.WEB_SOCKET_PORT_PROPERTY_NAME;
+import static io.moquette.BrokerConstants.WSS_PORT_PROPERTY_NAME;
+import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
+
 import io.moquette.BrokerConstants;
 import io.moquette.broker.config.IConfig;
-import io.moquette.broker.metrics.*;
+import io.moquette.broker.listener.MqttListener;
+import io.moquette.broker.metrics.BytesMetrics;
+import io.moquette.broker.metrics.BytesMetricsCollector;
+import io.moquette.broker.metrics.BytesMetricsHandler;
+import io.moquette.broker.metrics.DropWizardMetricsHandler;
+import io.moquette.broker.metrics.MQTTMessageLogger;
+import io.moquette.broker.metrics.MessageMetrics;
+import io.moquette.broker.metrics.MessageMetricsCollector;
+import io.moquette.broker.metrics.MessageMetricsHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandler;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -42,10 +67,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.Future;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.net.ssl.SSLEngine;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.HashMap;
@@ -53,9 +74,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-
-import static io.moquette.BrokerConstants.*;
-import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
+import javax.net.ssl.SSLEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class NewNettyAcceptor {
 
@@ -63,6 +84,12 @@ class NewNettyAcceptor {
     public static final String PLAIN_MQTT_PROTO = "TCP MQTT";
     public static final String SSL_MQTT_PROTO = "SSL MQTT";
 
+
+    private MqttListener mqttListener;
+
+    public NewNettyAcceptor(MqttListener mqttListener) {
+        this.mqttListener = mqttListener;
+    }
     static class WebSocketFrameToByteBufDecoder extends MessageToMessageDecoder<BinaryWebSocketFrame> {
 
         @Override
@@ -265,7 +292,7 @@ class NewNettyAcceptor {
         pipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
         pipeline.addLast("decoder", new MqttDecoder(maxBytesInMessage));
         pipeline.addLast("encoder", MqttEncoder.INSTANCE);
-        pipeline.addLast("metrics", new MessageMetricsHandler(metricsCollector));
+        pipeline.addLast("metrics", new MessageMetricsHandler(metricsCollector, mqttListener));
         pipeline.addLast("messageLogger", new MQTTMessageLogger());
         if (metrics.isPresent()) {
             pipeline.addLast("wizardMetrics", metrics.get());
