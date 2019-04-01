@@ -2,8 +2,8 @@ package com.xhg.mqtt.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.xhg.message.client.annotation.Consumer;
-import com.xhg.message.client.annotation.Topic;
+//import com.xhg.message.client.annotation.Consumer;
+//import com.xhg.message.client.annotation.Topic;
 import com.xhg.mqtt.mq.message.RocketMqMessage;
 import com.xhg.mqtt.mq.message.RocketWrapperMessage;
 import com.xhg.mqtt.mq.proto.MqttMessagePb;
@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * rocket mq消息监听
  */
-@Consumer
+//@Consumer
 public class RocketMqMessageListener implements Decoder<RocketWrapperMessage> {
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
@@ -30,7 +30,7 @@ public class RocketMqMessageListener implements Decoder<RocketWrapperMessage> {
 	 * 订阅广播指令
 	 * chenxiaojun 2018年7月19日
 	 */
-	@Topic("${spring.extend.mq.consumer.broadcast:}")
+//	@Topic("${spring.extend.mq.consumer.broadcast:}")
 	public void subscribeBroadcastOrder(RocketMqMessage message) {
 		RocketWrapperMessage msg = new RocketWrapperMessage();
 		msg.setSrcMessage(message);

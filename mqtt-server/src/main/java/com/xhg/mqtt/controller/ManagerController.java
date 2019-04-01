@@ -7,12 +7,19 @@ import io.moquette.broker.subscriptions.Subscription;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+
+import io.netty.buffer.Unpooled;
+import io.netty.handler.codec.mqtt.MqttMessageBuilders;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Created by xieyang on 19/3/30.
@@ -82,6 +89,18 @@ public class ManagerController {
         sessions.forEach((k,v)->{
             v.closeImmediately();
         });
+        return true;
+
+    }
+
+    @GetMapping("/reset/clients")
+    boolean resetClients() {
+        MqttPublishMessage publish = MqttMessageBuilders.publish()
+                .topicName("/topic/reset")
+                .retained(false)
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .payload(Unpooled.copiedBuffer("重置所有客户端".getBytes(UTF_8))).build();
+        sessionManager.publish(publish);
         return true;
 
     }

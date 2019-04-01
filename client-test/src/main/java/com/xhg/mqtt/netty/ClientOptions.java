@@ -60,7 +60,7 @@ public class ClientOptions implements Cloneable{
     }
 
     @Override
-    protected ClientOptions clone() throws CloneNotSupportedException {
+    public ClientOptions clone() throws CloneNotSupportedException {
         ClientOptions clone = (ClientOptions) super.clone();
         return clone;
     }

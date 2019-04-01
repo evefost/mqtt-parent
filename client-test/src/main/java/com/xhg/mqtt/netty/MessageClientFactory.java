@@ -38,35 +38,30 @@ public class MessageClientFactory {
     private static final Logger logger = LoggerFactory.getLogger(MessageClientFactory.class);
 
 
-    private static List<MessageClient> nettyChannels = new ArrayList<>();
+    private volatile static List<MessageClient> clients = new ArrayList<>();
 
     private static AtomicInteger clientCount = new AtomicInteger(0);
 
 
-
     public static MessageClient getAndCreateChannel(ClientOptions options) throws InterruptedException, CloneNotSupportedException {
         ClientOptions.Node node = selectNode(options);
+        options.setSelectNode(node);
         Bootstrap bootstrap = NettyClientStarter.getInstance().getBootstrap();
-        Channel channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
+        Channel channel = bootstrap.connect(options.getSelectNode().getHost(), options.getSelectNode().getPort()).sync().channel();
         String clientId = createClientId();
         String pointTopic="/topic/"+clientId;
-        String broadcastTopic = "/topic/all";
-        ClientOptions clone = options.clone();
-        clone.setAutoReconnect(true);
-        String[] topics = {pointTopic,broadcastTopic};
-        clone.setTopics(topics);
-        clone.setSelectNode(node);
-        MqttNettyClient client = new MqttNettyClient(bootstrap,clone,clientId,channel);
+        options.getTopics().add(pointTopic);
+        MqttNettyClient client = new MqttNettyClient(bootstrap,options,clientId,channel);
         channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(client);
         client.connect();
-        nettyChannels.add(client);
+        clients.add(client);
         return  client;
     }
 
 
     public static UnmodifiableArrayList<MessageClient> getNettyChannels() {
-        MessageClient[] array = new MessageClient[nettyChannels.size()];
-        nettyChannels.toArray(array);
+        MessageClient[] array = new MessageClient[clients.size()];
+        clients.toArray(array);
         return new UnmodifiableArrayList<>(array,array.length);
     }
 
@@ -90,6 +85,16 @@ public class MessageClientFactory {
         node1.setPort(Integer.parseInt(nodeInfo[1]));
         return node1;
 
+    }
+
+    public synchronized static void reset(){
+        clients.forEach((client)->{
+            client.getOptions().setAutoReconnect(false);
+            client.disconnect();
+        });
+        clients = null;
+        clients = new ArrayList<>();
+        clientCount.set(0);
     }
 
 

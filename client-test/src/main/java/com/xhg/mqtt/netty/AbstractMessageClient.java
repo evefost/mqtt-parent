@@ -129,17 +129,20 @@ public abstract class AbstractMessageClient implements MessageClient {
         if (options.isAutoReconnect()) {
             if (!channel.isActive() && reconnectTimes < 5) {
                 reconnectTimes++;
-                reconnect();
+                reconnect(false);
             }
         }
     }
 
 
-    protected void reconnect() {
-        try {
-            TimeUnit.SECONDS.sleep(random.nextInt(10));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    @Override
+    public void reconnect(boolean immediately) {
+        if(!immediately){
+            try {
+                TimeUnit.SECONDS.sleep(random.nextInt(10));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         logger.info("[{}]重连=====>>>>", clientId);
         ClientOptions.Node node = options.getSelectNode();
@@ -153,11 +156,6 @@ public abstract class AbstractMessageClient implements MessageClient {
             onClosed(null);
         }
     }
-
-
-
-
-
 
 
     public synchronized void startPingTask(int keepAlive) {
@@ -178,6 +176,18 @@ public abstract class AbstractMessageClient implements MessageClient {
                 AbstractMessageClient messageClient = (AbstractMessageClient) c;
                 messageClient.ping();
             });
+        }
+    }
+
+    @Override
+    public ClientOptions getOptions() {
+        return options;
+    }
+
+    @Override
+    public void disconnect() {
+        if(channel.isOpen()){
+            channel.close();
         }
     }
 

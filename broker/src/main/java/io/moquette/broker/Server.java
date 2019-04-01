@@ -213,6 +213,10 @@ public class Server {
         initialized = true;
     }
 
+    public PostOffice getDispatcher(){
+        return dispatcher;
+    }
+
     private IAuthorizatorPolicy initializeAuthorizatorPolicy(IAuthorizatorPolicy authorizatorPolicy, IConfig props) {
         LOG.debug("Configuring MQTT authorizator policy");
         String authorizatorClassName = props.getProperty(BrokerConstants.AUTHORIZATOR_CLASS_NAME, "");

@@ -6,8 +6,9 @@ import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.ReceiveRange;
 import com.xhg.mqtt.mq.message.RocketMqMessage;
 import com.xhg.mqtt.mq.message.RocketWrapperMessage;
+import org.springframework.util.StringUtils;
+
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * 处理下发设备广播消息

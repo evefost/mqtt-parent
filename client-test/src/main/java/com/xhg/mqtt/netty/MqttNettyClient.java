@@ -3,6 +3,7 @@ package com.xhg.mqtt.netty;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,8 +13,6 @@ import java.util.concurrent.Executors;
  * @author xieyang
  */
 public class MqttNettyClient extends AbstractMessageClient {
-
-
 
 
     private final static ExecutorService service = Executors.newFixedThreadPool(20);
@@ -26,8 +25,7 @@ public class MqttNettyClient extends AbstractMessageClient {
 
 
     @Override
-    public void onReceived(MqttMessage msg) {
-
+    public void onReceived(String topic,MqttPublishMessage msg) {
 
     }
 
@@ -39,12 +37,14 @@ public class MqttNettyClient extends AbstractMessageClient {
                 service.submit(new Runnable() {
                     @Override
                     public void run() {
-
-                        logger.info("[{}]重连=====>>>>", clientId);
-                        reconnect();
+                        reconnect(false);
                     }
                 });
             }
         }
     }
+
+
+
+
 }

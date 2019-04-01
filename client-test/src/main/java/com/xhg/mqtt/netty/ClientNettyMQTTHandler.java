@@ -45,9 +45,14 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
         AbstractMessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
         if (mqttFixedHeader.messageType() == PUBLISH) {
             MqttPublishMessage publishMessage = (MqttPublishMessage) message;
-            MqttPublishVariableHeader mqttPublishVariableHeader = publishMessage.variableHeader();
-            logger.info("[{}]收到消息:{}", mqttChannel.getClientId(), mqttPublishVariableHeader.topicName());
-            mqttChannel.onReceived(msg);
+            MqttPublishVariableHeader header = publishMessage.variableHeader();
+            String topic = header.topicName();
+            logger.info("[{}]收到消息:{}", mqttChannel.getClientId(), header.topicName());
+            if("/topic/reset".equals(topic)){
+                MessageClientFactory.reset();
+            }else {
+                mqttChannel.onReceived(topic,publishMessage);
+            }
         } else if (mqttFixedHeader.messageType() == CONNACK) {
             logger.info("[{}] 连接成功", mqttChannel.getClientId());
             mqttChannel.subscript();

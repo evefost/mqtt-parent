@@ -1,9 +1,5 @@
 package com.xhg.mqtt.mq.client;
 
-import com.xhg.message.client.pojo.SendMsgResult;
-import com.xhg.message.client.pojo.SourceEvent;
-import com.xhg.message.client.support.MessagePublisher;
-import com.xhg.message.client.support.SendMsgCallback;
 import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 import com.xhg.mqtt.mq.message.RocketMqBaseMessage;
@@ -22,8 +18,8 @@ public class XhgRocketMqClient extends AbstractMessageClient<MqttWrapperMessage>
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Autowired(required = false)
-    private MessagePublisher messagePublisher;
+//    @Autowired(required = false)
+//    private MessagePublisher messagePublisher;
 
     @Override
     protected void doPublish(Message message) {
@@ -31,24 +27,24 @@ public class XhgRocketMqClient extends AbstractMessageClient<MqttWrapperMessage>
         String data = Base64.encodeBase64String(payload);
         RocketMqBaseMessage rocketMqBaseMessage = new RocketMqBaseMessage();
         rocketMqBaseMessage.setData(data);
-        SourceEvent<RocketMqBaseMessage> event = new SourceEvent<>(this);
-        event.setTopic(message.getTopic());
-        event.setData(rocketMqBaseMessage);
-        choseClient().publishEvent(event, new SendMsgCallback() {
-            @Override
-            public void onSuccess(SendMsgResult sendResult) {
-
-            }
-
-            @Override
-            public void onException(Throwable e) {
-                onFailed(e,message);
-            }
-        });
+//        SourceEvent<RocketMqBaseMessage> event = new SourceEvent<>(this);
+//        event.setTopic(message.getTopic());
+//        event.setData(rocketMqBaseMessage);
+//        choseClient().publishEvent(event, new SendMsgCallback() {
+//            @Override
+//            public void onSuccess(SendMsgResult sendResult) {
+//
+//            }
+//
+//            @Override
+//            public void onException(Throwable e) {
+//                onFailed(e,message);
+//            }
+//        });
     }
 
     @Override
-    protected MessagePublisher choseClient() {
-        return messagePublisher;
+    protected Object choseClient() {
+        return null;
     }
 }

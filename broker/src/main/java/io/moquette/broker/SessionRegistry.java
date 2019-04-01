@@ -75,6 +75,11 @@ public class SessionRegistry {
         this.authorizator = authorizator;
     }
 
+    public ISubscriptionsDirectory getsubscriptionsDirectory(){
+        return subscriptionsDirectory;
+    }
+
+
     void bindToSession(MQTTConnection mqttConnection, MqttConnectMessage msg, String clientId) {
         boolean isSessionAlreadyStored = false;
         PostConnectAction postConnectAction = PostConnectAction.NONE;

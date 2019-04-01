@@ -4,6 +4,7 @@ import com.xhg.mqtt.metrics.MetricsMqttListener;
 import com.xhg.mqtt.mq.PublisherListener;
 import com.xhg.mqtt.mq.SessionManager;
 import io.moquette.broker.Server;
+import io.moquette.broker.SessionRegistry;
 import io.moquette.broker.config.ClasspathResourceLoader;
 import io.moquette.broker.config.IConfig;
 import io.moquette.broker.config.IResourceLoader;
@@ -68,7 +69,9 @@ public class BrokerAutoConfig implements ApplicationContextAware, SmartInitializ
             broker.stopServer();
             logger.info("Broker stopped");
         }));
-        sessionManager.setSessionRegistry(broker.getSessionRegistry());
+        SessionRegistry sessionRegistry = broker.getSessionRegistry();
+        sessionManager.setSessionRegistry(sessionRegistry);
+        sessionManager.setSubscriptions(sessionRegistry.getsubscriptionsDirectory());
         logger.info("Broker start:");
 
     }

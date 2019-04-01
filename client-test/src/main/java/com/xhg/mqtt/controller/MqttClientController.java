@@ -4,7 +4,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.protobuf.ByteString;
 import com.sun.javafx.UnmodifiableArrayList;
-import com.xhg.core.web.vo.ResponseBean;
 import com.xhg.mqtt.mq.EventCodeEnum;
 import com.xhg.mqtt.mq.proto.BoxInfoPb.BoxInfo;
 import com.xhg.mqtt.mq.proto.BoxInfoPb.BoxStatus;
@@ -19,6 +18,9 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -53,14 +55,24 @@ public class MqttClientController implements InitializingBean {
     @Value("${product-key:}")
     private String productKey;
 
+    private ClientOptions options;
+
     @GetMapping("/create/netty")
     String createNettyClient(int count) throws MqttException, InterruptedException {
         for (int i = 0; i < count; i++) {
             try {
-                MessageClient channel = MessageClientFactory.getAndCreateChannel(options);
+                ClientOptions clone = options.clone();
+                List<String> topics = new ArrayList<>(2);
+                clone.setAutoReconnect(true);
+                String broadcastTopic = "/topic/all";
+                String resetTopic = "/topic/reset";
+                topics.add(resetTopic);
+                topics.add(broadcastTopic);
+                clone.setTopics(topics);
+                MessageClientFactory.getAndCreateChannel(clone);
             } catch (InterruptedException e) {
                 logger.error("连接通道失败");
-            } catch (CloneNotSupportedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -69,7 +81,15 @@ public class MqttClientController implements InitializingBean {
 
     @GetMapping("/create")
     String createNettyClient() throws MqttException, InterruptedException, CloneNotSupportedException {
-        SingletonClient instance = SingletonClient.getInstance(options);
+        ClientOptions clone = options.clone();
+        clone.setAutoReconnect(true);
+        List<String> topics = new ArrayList<>(2);
+        String broadcastTopic = "/topic/all";
+        String resetTopic = "/topic/reset";
+        topics.add(broadcastTopic);
+        topics.add(resetTopic);
+        clone.setTopics(topics);
+        SingletonClient instance = SingletonClient.getInstance(clone);
         return instance.getClientId();
     }
 
@@ -106,6 +126,12 @@ public class MqttClientController implements InitializingBean {
         return "send success";
     }
 
+    @GetMapping("/reset")
+    String reset() throws MqttException {
+        MessageClientFactory.reset();
+        return "send success";
+    }
+
     @GetMapping("/broadcast")
     String broadcast() throws MqttException {
         String topic2 = "/topic/all";
@@ -125,7 +151,7 @@ public class MqttClientController implements InitializingBean {
         return "send success";
     }
 
-    ClientOptions options;
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -136,7 +162,7 @@ public class MqttClientController implements InitializingBean {
 
 
     @RequestMapping(value = "/sendBoxInfo", method = RequestMethod.GET)
-    public ResponseBean sendBoxInfo() throws MqttException {
+    public String sendBoxInfo() throws MqttException {
 
         UnmodifiableArrayList<MessageClient> clients = MessageClientFactory.getNettyChannels();
 
@@ -159,7 +185,7 @@ public class MqttClientController implements InitializingBean {
             });
 
         }
-        return ResponseBean.success(clients.size());
+        return ""+clients.size();
     }
 
     private Builder buildBoxMessage(String clientId) {
