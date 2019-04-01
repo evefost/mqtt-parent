@@ -1,0 +1,157 @@
+package com.xhg.mqtt.mq.handler;
+
+import com.google.protobuf.AbstractMessage;
+import com.xhg.mqtt.mq.MessageInputListener;
+import com.xhg.mqtt.mq.POINT;
+import com.xhg.mqtt.mq.ProcessHook;
+import com.xhg.mqtt.mq.client.MessageClient;
+import com.xhg.mqtt.mq.message.Message;
+import com.xhg.mqtt.mq.proto.MqttMessagePb.MqttHead;
+import com.xhg.mqtt.mq.proto.MqttMessagePb.MqttMessage;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
+
+/**
+ * 抽象模板勾子处理
+ *
+ * @author xie
+ */
+public abstract class AbstractHandler<M extends Message> implements Handler{
+
+    protected static final String ACK_FLAG="/ack";
+
+    protected Logger logger = LoggerFactory.getLogger(getClass());
+
+    private static List<ProcessHook> hooks = new ArrayList<>();
+
+    private static List<MessageInputListener> listeners = new ArrayList<>();
+
+    protected MessageClient client;
+
+    public AbstractHandler(MessageClient client){
+        this.client = client;
+    }
+
+    @Override
+    public boolean support(Message message) {
+        MqttHead head = message.getMqttMessage().getHead();
+        POINT from = message.getFrom();
+        if( getEventCode().equals(head.getEventCode())&& getPoint().equals(from)){
+            return true;
+        }
+        return false;
+    }
+
+
+    public void processMessage(M message) {
+        doBefore(message);
+        try {
+            boolean ack = isAck(message);
+            if(ack){
+                doProcessAck(message);
+            }else {
+                doProcess(message);
+            }
+            if(!ack && isNeedAck(message)){
+                doAck(message);
+            }
+        } finally {
+            doAfter(message);
+        }
+    }
+
+
+    /**
+     * 如果是需要ack的消息，该方法将被执行
+     * @param message
+     */
+    protected void doAck(M message) {
+        if(logger.isDebugEnabled()){
+            logger.debug(" ack 请求");
+        }
+    }
+
+
+
+    /**
+     * 处理相应逻辑，执行该方法时消息已被解码处理
+     */
+    protected abstract void doProcess(M message);
+
+
+    /**
+     *  处理ack消息，该方法被执行
+     * @param message
+     */
+    protected  void doProcessAck(M message){
+        logger.debug("处理收到的ack消息");
+        message.setTopic("xhg-order-ack");
+
+    }
+
+
+    public static void registHook(ProcessHook hook) {
+        hooks.add(hook);
+    }
+
+    public static void unRegister(ProcessHook hook) {
+        hooks.remove(hook);
+    }
+
+    public static void registerListner(MessageInputListener listener) {
+        listeners.add(listener);
+    }
+
+    public static void unRegisterListener(MessageInputListener listener) {
+        listeners.remove(listener);
+    }
+
+
+
+    private void doAfter(M message) {
+        for (ProcessHook hook : hooks) {
+            hook.afterProcess(message);
+        }
+    }
+
+
+    protected void doBefore(M message) {
+        for (MessageInputListener listener : listeners) {
+            listener.input(message);
+        }
+
+        for (ProcessHook hook : hooks) {
+            hook.beforeProcess(message);
+        }
+    }
+
+
+    protected   boolean isAck(Message message){
+        String topic = message.getTopic();
+        if(StringUtils.isEmpty(topic)){
+            return false;
+        }
+        if(topic.endsWith(ACK_FLAG)){
+            return true;
+        }
+       return false;
+    }
+
+
+    protected   boolean isNeedAck(Message message){
+        MqttMessage mqttMessage = message.getMqttMessage();
+        int cc = mqttMessage.getHead().getCc();
+        return 1==cc;
+    }
+
+
+    protected  <R extends AbstractMessage> R parseMessageBody(M message){
+        throw new UnsupportedOperationException("不支持该操作");
+    }
+
+
+
+}

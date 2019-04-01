@@ -1,5 +1,6 @@
 package com.xhg.mqtt;
 
+import com.xhg.message.client.annotation.EnableScanTopic;
 import io.moquette.broker.Server;
 import io.moquette.broker.config.ClasspathResourceLoader;
 import io.moquette.broker.config.IConfig;
@@ -16,6 +17,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication(scanBasePackages = {"com.xhg"})
 @EnableDiscoveryClient
+@EnableScanTopic
 public class MqttApplication {
 
     public static Server mqttBroker;
