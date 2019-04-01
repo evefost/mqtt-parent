@@ -5,18 +5,14 @@ import io.moquette.broker.Server;
 import io.moquette.broker.Session;
 import io.moquette.broker.SessionRegistry;
 import io.moquette.broker.subscriptions.Subscription;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by xieyang on 19/3/30.
@@ -30,7 +26,7 @@ public class SessionManagerController {
 
 
     @GetMapping("/sessions/ByPage")
-    Page<SessionClient> getSessionsByPage(int currentPage, int pageSize) throws MqttException {
+    Page<SessionClient> getSessionsByPage(int currentPage, int pageSize)  {
         Server mqttBroker = MqttApplication.mqttBroker;
 
         SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
@@ -69,7 +65,7 @@ public class SessionManagerController {
     }
 
     @GetMapping("/close/client")
-    boolean closeClient(String clientId) throws MqttException {
+    boolean closeClient(String clientId) {
         Server mqttBroker = MqttApplication.mqttBroker;
         SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
         ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
@@ -83,7 +79,7 @@ public class SessionManagerController {
     }
 
     @GetMapping("/close/all")
-    boolean closeAll() throws MqttException {
+    boolean closeAll() {
         Server mqttBroker = MqttApplication.mqttBroker;
         SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
         ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();

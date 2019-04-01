@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.sun.xml.internal.ws.dump.LoggingDumpTube.Position.Before;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
