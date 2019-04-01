@@ -9,12 +9,6 @@ public interface MessageClient {
 
     String getClientId();
 
-    void subscript();
-
-    void connect();
-
-    void ping();
-
     void send(MqttMessage msg);
 
     void onReceived(MqttMessage msg);

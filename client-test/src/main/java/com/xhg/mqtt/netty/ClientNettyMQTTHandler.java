@@ -34,7 +34,7 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
     public static final String ATTR_CLIENT_CHANNEL = "client_channel";
 
-    public static final AttributeKey<MessageClient> ATTR_KEY_CLIENT_CHANNEL = AttributeKey.valueOf(ATTR_CLIENT_CHANNEL);
+    public static final AttributeKey<AbstractMessageClient> ATTR_KEY_CLIENT_CHANNEL = AttributeKey.valueOf(ATTR_CLIENT_CHANNEL);
 
 
 
@@ -42,7 +42,7 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         MqttMessage msg = (MqttMessage) message;
         MqttFixedHeader mqttFixedHeader = msg.fixedHeader();
-        MessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
+        AbstractMessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
         if (mqttFixedHeader.messageType() == PUBLISH) {
             MqttPublishMessage publishMessage = (MqttPublishMessage) message;
             MqttPublishVariableHeader mqttPublishVariableHeader = publishMessage.variableHeader();
@@ -86,7 +86,7 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     }
 
     private MessageClient getClient(ChannelHandlerContext ctx){
-        MessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
+        AbstractMessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
         return mqttChannel;
     }
 

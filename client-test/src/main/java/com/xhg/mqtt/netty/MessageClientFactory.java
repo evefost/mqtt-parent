@@ -56,7 +56,7 @@ public class MessageClientFactory {
         String[] topics = {pointTopic,broadcastTopic};
         clone.setTopics(topics);
         clone.setSelectNode(node);
-        MessageClient client = new MqttNettyClient(bootstrap,clone,clientId,channel);
+        MqttNettyClient client = new MqttNettyClient(bootstrap,clone,clientId,channel);
         channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(client);
         client.connect();
         nettyChannels.add(client);

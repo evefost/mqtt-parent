@@ -132,23 +132,6 @@ public class MqttClientController implements InitializingBean {
         options = new ClientOptions();
         String[] nodes = {"127.0.0.1:1883"};
         options.setBrokerNodes(nodes);
-
-        new Thread() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(60000L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
-                    nettyChannels.forEach((c) -> {
-                        c.ping();
-                    });
-                }
-            }
-        }.start();
     }
 
 

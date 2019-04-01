@@ -1,5 +1,7 @@
 package com.xhg.mqtt.netty;
 
+import java.util.List;
+
 /**
  *
  * @author xieyang
@@ -9,7 +11,7 @@ public class ClientOptions implements Cloneable{
 
     private String[] brokerNodes;
 
-    private String[] topics;
+    private List<String> topics;
 
     private int keepAlive=120;
 
@@ -33,11 +35,11 @@ public class ClientOptions implements Cloneable{
         this.autoReconnect = autoReconnect;
     }
 
-    public String[] getTopics() {
+    public List<String> getTopics() {
         return topics;
     }
 
-    public void setTopics(String[] topics) {
+    public void setTopics(List<String> topics) {
         this.topics = topics;
     }
 

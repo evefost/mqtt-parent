@@ -16,8 +16,7 @@ public class MqttNettyClient extends AbstractMessageClient {
 
 
 
-    private ExecutorService service = Executors.newFixedThreadPool(20);
-
+    private final static ExecutorService service = Executors.newFixedThreadPool(20);
 
 
     public MqttNettyClient(Bootstrap bootstrap,ClientOptions options, String clientId, Channel channel) {
@@ -28,6 +27,13 @@ public class MqttNettyClient extends AbstractMessageClient {
 
     @Override
     public void onReceived(MqttMessage msg) {
+
+
+    }
+
+
+    @Override
+    public void onClosed(Throwable cause) {
         if (options.isAutoReconnect()) {
             if (!channel.isActive()) {
                 service.submit(new Runnable() {
@@ -40,11 +46,5 @@ public class MqttNettyClient extends AbstractMessageClient {
                 });
             }
         }
-
     }
-
-
-
-
-
 }
