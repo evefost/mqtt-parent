@@ -1,4 +1,4 @@
-package com.xie.mqtt;
+package com.xhg.mqtt;
 
 import io.moquette.broker.Server;
 import io.moquette.broker.config.ClasspathResourceLoader;
@@ -13,13 +13,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-@SpringBootApplication(scanBasePackages = {"com.xie"})
-public class MqttBrokerApplication {
+@SpringBootApplication(scanBasePackages = {"com.xhg"})
+public class MqttApplication {
 
     public static Server mqttBroker;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        SpringApplication.run(MqttBrokerApplication.class, args);
+        SpringApplication.run(MqttApplication.class, args);
         startBroker(args);
     }
 

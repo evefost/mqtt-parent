@@ -1,6 +1,4 @@
-package com.xie.mqtt.netty;
-
-import java.io.Serializable;
+package com.xhg.mqtt.netty;
 
 /**
  *

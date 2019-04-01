@@ -1,10 +1,10 @@
-package com.xie.mqtt.controller;
+package com.xhg.mqtt.controller;
 
 import com.sun.javafx.UnmodifiableArrayList;
-import com.xie.mqtt.netty.ClientOptions;
-import com.xie.mqtt.netty.MessageClient;
-import com.xie.mqtt.netty.MessageClientFactory;
-import com.xie.mqtt.netty.SingletonClient;
+import com.xhg.mqtt.netty.ClientOptions;
+import com.xhg.mqtt.netty.MessageClientFactory;
+import com.xhg.mqtt.netty.MessageClient;
+import com.xhg.mqtt.netty.SingletonClient;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.*;
 import org.eclipse.paho.client.mqttv3.*;

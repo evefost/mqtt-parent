@@ -14,14 +14,11 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package com.xie.mqtt.netty;
+package com.xhg.mqtt.netty;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttMessage;
-
-import static com.xie.mqtt.netty.ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL;
-import static com.xie.mqtt.netty.MessageClientFactory.selectNode;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use
@@ -52,7 +49,7 @@ public class SingletonClient extends AbstractMessageClient {
     }
 
     private static SingletonClient createInstance(ClientOptions options) throws InterruptedException, CloneNotSupportedException {
-        ClientOptions.Node node = selectNode(options);
+        ClientOptions.Node node = MessageClientFactory.selectNode(options);
         String clientId = MessageClientFactory.createClientId();
         String pointTopic="/topic/"+clientId;
         String broadcastTopic = "/topic/all";
@@ -64,7 +61,7 @@ public class SingletonClient extends AbstractMessageClient {
         Bootstrap bootstrap = NettyClientStarter.getInstance().getBootstrap();
         Channel channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
         SingletonClient singletonClient = new SingletonClient(bootstrap, clone, clientId, channel);
-        channel.attr(ATTR_KEY_CLIENT_CHANNEL).set(singletonClient);
+        channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(singletonClient);
         singletonClient.connect();
         return singletonClient;
     }

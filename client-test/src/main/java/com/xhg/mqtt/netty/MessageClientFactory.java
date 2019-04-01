@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package com.xie.mqtt.netty;
+package com.xhg.mqtt.netty;
 
 import com.sun.javafx.UnmodifiableArrayList;
 import io.netty.bootstrap.Bootstrap;
@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.xie.mqtt.netty.ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use
@@ -59,7 +57,7 @@ public class MessageClientFactory {
         clone.setTopics(topics);
         clone.setSelectNode(node);
         MessageClient client = new MqttNettyClient(bootstrap,clone,clientId,channel);
-        channel.attr(ATTR_KEY_CLIENT_CHANNEL).set(client);
+        channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(client);
         client.connect();
         nettyChannels.add(client);
         return  client;

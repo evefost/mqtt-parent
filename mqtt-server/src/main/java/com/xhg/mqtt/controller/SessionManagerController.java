@@ -1,6 +1,6 @@
-package com.xie.mqtt.controller;
+package com.xhg.mqtt.controller;
 
-import com.xie.mqtt.MqttBrokerApplication;
+import com.xhg.mqtt.MqttApplication;
 import io.moquette.broker.Server;
 import io.moquette.broker.Session;
 import io.moquette.broker.SessionRegistry;
@@ -29,13 +29,9 @@ public class SessionManagerController {
     private static final Logger logger = LoggerFactory.getLogger(SessionManagerController.class);
 
 
-    List<MqttClient> clients = new ArrayList<MqttClient>();
-
-    private AtomicInteger clientCount = new AtomicInteger(0);
-
     @GetMapping("/sessions/ByPage")
     Page<SessionClient> getSessionsByPage(int currentPage, int pageSize) throws MqttException {
-        Server mqttBroker = MqttBrokerApplication.mqttBroker;
+        Server mqttBroker = MqttApplication.mqttBroker;
 
         SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
         ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
@@ -48,9 +44,9 @@ public class SessionManagerController {
 
             return page;
         }
-        Page<Session> tempage = new Page<>(sessionList, pageSize);
-        tempage.setCurrentPage(currentPage);
-        List<Session> items = tempage.getItems();
+        Page<Session> temPage = new Page<>(sessionList, pageSize);
+        temPage.setCurrentPage(currentPage);
+        List<Session> items = temPage.getItems();
         List<SessionClient> clients = new ArrayList<>(items.size());
         for(Session s:items){
             SessionClient c = new SessionClient();
@@ -65,8 +61,8 @@ public class SessionManagerController {
             clients.add(c);
         }
         page.setItems(clients);
-        page.setTotal(tempage.getTotal());
-        page.setTotalPages(tempage.getTotalPages());
+        page.setTotal(temPage.getTotal());
+        page.setTotalPages(temPage.getTotalPages());
         page.updateCurrentPage(currentPage);
         return page;
 
@@ -74,10 +70,8 @@ public class SessionManagerController {
 
     @GetMapping("/close/client")
     boolean closeClient(String clientId) throws MqttException {
-        Server mqttBroker = MqttBrokerApplication.mqttBroker;
-
+        Server mqttBroker = MqttApplication.mqttBroker;
         SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
-
         ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
         Session session = sessions.get(clientId);
         if(session == null){
@@ -90,10 +84,8 @@ public class SessionManagerController {
 
     @GetMapping("/close/all")
     boolean closeAll() throws MqttException {
-        Server mqttBroker = MqttBrokerApplication.mqttBroker;
-
+        Server mqttBroker = MqttApplication.mqttBroker;
         SessionRegistry sessionRegistry = mqttBroker.getSessionRegistry();
-
         ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
         sessions.forEach((k,v)->{
             v.closeImmediately();

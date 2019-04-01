@@ -1,4 +1,4 @@
-package com.xie.mqtt.netty;
+package com.xhg.mqtt.netty;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;

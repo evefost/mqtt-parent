@@ -1,4 +1,4 @@
-package com.xie.mqtt;
+package com.xhg.mqtt;
 
 import io.moquette.interception.AbstractInterceptHandler;
 import io.moquette.interception.messages.InterceptPublishMessage;

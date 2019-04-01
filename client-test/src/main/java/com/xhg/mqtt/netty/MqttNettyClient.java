@@ -1,13 +1,11 @@
-package com.xie.mqtt.netty;
+package com.xhg.mqtt.netty;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttMessage;
 
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * created by xieyang on 19/3/31.

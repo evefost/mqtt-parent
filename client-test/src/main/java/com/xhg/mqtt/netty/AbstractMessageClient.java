@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package com.xie.mqtt.netty;
+package com.xhg.mqtt.netty;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -22,12 +22,10 @@ import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.xie.mqtt.netty.ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
 
@@ -139,7 +137,7 @@ public abstract class AbstractMessageClient implements MessageClient {
         ClientOptions.Node node = options.getSelectNode();
         try {
             channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
-            channel.attr(ATTR_KEY_CLIENT_CHANNEL).set(AbstractMessageClient.this);
+            channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(AbstractMessageClient.this);
             connect();
             reconnectTimes =0;
         } catch (Exception e) {
