@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractMessageClient implements MessageClient {
 
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractMessageClient.class);
 
     private AtomicInteger id = new AtomicInteger(0);
 

@@ -46,17 +46,18 @@ public class MessageClientFactory {
     private static AtomicInteger clientCount = new AtomicInteger(0);
 
 
-    private static ClientOptions commonOptoins;
+    private static ClientOptions commonOptions;
+
     private static String host;
 
     private static volatile boolean isLoadHost;
 
-    public static void setCommonOptoins(ClientOptions optoins) {
-        commonOptoins = optoins;
+    public static void setCommonOptoins(ClientOptions options) {
+        commonOptions = options;
     }
 
     public static ClientOptions getCommonOptoins() {
-        return commonOptoins;
+        return commonOptions;
     }
 
     public static MessageClient getAndCreateChannel(ClientOptions srcOptions)

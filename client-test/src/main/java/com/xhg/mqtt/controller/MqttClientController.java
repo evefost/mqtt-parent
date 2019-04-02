@@ -205,8 +205,8 @@ public class MqttClientController implements SmartInitializingSingleton {
         ClientOptions clone = options.clone();
         try {
             SingletonClient.getInstance(clone);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (Throwable e) {
+            logger.warn("初始化失败:",e);
         }
     }
 

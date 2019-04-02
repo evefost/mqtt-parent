@@ -51,7 +51,7 @@ public class SingletonClient extends AbstractMessageClient {
         return instance;
     }
 
-    private static SingletonClient createInstance(ClientOptions srcOptions) throws InterruptedException {
+    private static SingletonClient createInstance(ClientOptions srcOptions) {
         ClientOptions.Node node = MessageClientFactory.selectNode(srcOptions);
         ClientOptions options = srcOptions.clone();
         options.setSelectNode(node);
@@ -61,7 +61,13 @@ public class SingletonClient extends AbstractMessageClient {
         options.getTopics().add(TEST_INCREASE_CLIENT.getTopic());
         addSystemTopics(options);
         Bootstrap bootstrap = NettyClientStarter.getInstance().getBootstrap();
-        Channel channel = bootstrap.connect(options.getSelectNode().getHost(), options.getSelectNode().getPort()).sync().channel();
+        Channel channel = null;
+        try {
+            channel = bootstrap.connect(options.getSelectNode().getHost(), options.getSelectNode().getPort()).sync().channel();
+        } catch (Throwable e) {
+            logger.error("客户连接mqtt服务端失败[{}:{}]:",node.getHost(),node.getPort(),e);
+            return null;
+        }
         SingletonClient singletonClient = new SingletonClient(bootstrap, options, clientId, channel);
         channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(singletonClient);
         singletonClient.connect();
