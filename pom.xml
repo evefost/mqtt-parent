@@ -17,7 +17,7 @@
     <modules>
         <module>broker</module>
         <module>xhg-mqtt-server</module>
-        <module>client-test</module>
+        <module>xhg-mqtt-client-test</module>
         <module>xhg-mqtt-common</module>
     </modules>
 

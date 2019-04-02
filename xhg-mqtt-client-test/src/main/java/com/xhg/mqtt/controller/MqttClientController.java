@@ -8,10 +8,7 @@ import com.xhg.mqtt.common.proto.BoxInfoPb.BoxStatus;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttHead;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage.Builder;
-import com.xhg.mqtt.netty.ClientOptions;
-import com.xhg.mqtt.netty.MessageClient;
-import com.xhg.mqtt.netty.MessageClientFactory;
-import com.xhg.mqtt.netty.SingletonClient;
+import com.xhg.mqtt.netty.*;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
@@ -25,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -66,29 +64,28 @@ public class MqttClientController implements SmartInitializingSingleton {
     String createNettyClient(int count) throws InterruptedException {
         for (int i = 0; i < count; i++) {
             try {
-                MessageClientFactory.getAndCreateChannel(options);
-            } catch (InterruptedException e) {
-                logger.error("连接通道失败");
+                MessageClientFactory.getAndCreateChannel(MqttNettyClient.class);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("连接通道失败", e);
+
             }
         }
         return MessageClientFactory.getNettyChannels().size() + "";
     }
 
     @GetMapping("/create")
-    String createNettyClient() throws InterruptedException, CloneNotSupportedException {
-        SingletonClient instance = SingletonClient.getInstance(options);
+    String createNettyClient() throws InterruptedException, CloneNotSupportedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        SingletonClient instance = SingletonClient.getInstance();
         return instance.getClientId();
     }
 
     @GetMapping("/send2")
-    String send2(String topic) throws CloneNotSupportedException, InterruptedException {
+    String send2(String topic) throws CloneNotSupportedException, InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         String topic2 = "/topic/client-" + topic;
         logger.debug("发布的topic:{}", topic2);
         ClientOptions clone = options.clone();
         clone.setAutoReconnect(true);
-        MessageClient mqttClient = SingletonClient.getInstance(clone);
+        MessageClient mqttClient = SingletonClient.getInstance();
         MqttPublishMessage publish = MqttMessageBuilders.publish()
                 .topicName(topic2)
                 .retained(false)
@@ -100,10 +97,10 @@ public class MqttClientController implements SmartInitializingSingleton {
 
 
     @GetMapping("/send")
-    String send(String topic) throws InterruptedException {
+    String send(String topic) throws InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, CloneNotSupportedException, IllegalAccessException {
         String topic2 = "/topic/client-" + topic;
         logger.debug("发布的topic:{}", topic2);
-        MessageClient client = SingletonClient.getInstance(options);
+        MessageClient client = SingletonClient.getInstance();
         Builder builder = buildBoxMessage(client.getClientId());
         MqttMessage message = builder.build();
         byte[] payload = message.toByteArray();
@@ -206,11 +203,10 @@ public class MqttClientController implements SmartInitializingSingleton {
         options.setAutoReconnect(true);
         options.setTopics(topics);
         MessageClientFactory.setCommonOptoins(options);
-        ClientOptions clone = options.clone();
         try {
-            SingletonClient.getInstance(clone);
+            SingletonClient.getInstance();
         } catch (Throwable e) {
-            logger.warn("初始化失败:", e);
+            logger.warn("连接客户端初始化失败:", e);
         }
     }
 

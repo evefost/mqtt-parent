@@ -1,18 +1,17 @@
 package com.xhg.mqtt.handler.test;
 
-import static com.xhg.mqtt.netty.MessageClientFactory.getAndCreateChannel;
-import static com.xhg.mqtt.netty.MessageClientFactory.getCommonOptoins;
-
 import com.alibaba.fastjson.JSON;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.bo.IncreaseClient;
 import com.xhg.mqtt.handler.AbstractHandler;
-import com.xhg.mqtt.netty.ClientOptions;
+import com.xhg.mqtt.netty.MqttNettyClient;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import org.springframework.stereotype.Component;
+
+import static com.xhg.mqtt.netty.MessageClientFactory.getAndCreateChannel;
 
 @Component
 public class IncreaseClientsHandler extends AbstractHandler {
@@ -56,8 +55,7 @@ public class IncreaseClientsHandler extends AbstractHandler {
             public void run() {
                 for (int i = 0; i < count; i++) {
                     try {
-                        ClientOptions clone = getCommonOptoins().clone();
-                        getAndCreateChannel(clone);
+                        getAndCreateChannel(MqttNettyClient.class);
                     } catch (Exception e) {
                         logger.error("创建连接异常",e);
                     }

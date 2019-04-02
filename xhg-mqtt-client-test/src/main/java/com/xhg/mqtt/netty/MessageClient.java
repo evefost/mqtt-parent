@@ -22,4 +22,8 @@ public interface MessageClient {
     void disconnect();
 
     void reconnect(boolean immediately);
+
+    void connect();
+
+    void subscript();
 }

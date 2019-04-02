@@ -81,7 +81,9 @@ public abstract class AbstractMessageClient implements MessageClient {
         startPingTask(options.getKeepAlive());
     }
 
-    void connect() {
+
+    @Override
+    public void connect() {
         logger.info("clientId[{}] 发送连接消息:", clientId);
         MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE,
                 false, 0);
@@ -95,15 +97,10 @@ public abstract class AbstractMessageClient implements MessageClient {
     }
 
 
-    void ping() {
-        MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGREQ, false, AT_MOST_ONCE,
-                false, 0);
-        MqttMessage pingReq = new MqttMessage(pingHeader);
-        send(pingReq);
 
-    }
 
-    void subscript() {
+    @Override
+    public void subscript() {
         logger.info("[{}] 订阅主题:{}", clientId, options.getTopics());
 
         MqttMessageBuilders.SubscribeBuilder subBuilder = MqttMessageBuilders.subscribe();
@@ -112,6 +109,15 @@ public abstract class AbstractMessageClient implements MessageClient {
         }
         MqttSubscribeMessage message = subBuilder.messageId(createMessageId()).build();
         channel.writeAndFlush(message);
+    }
+
+
+    void ping() {
+        MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGREQ, false, AT_MOST_ONCE,
+                false, 0);
+        MqttMessage pingReq = new MqttMessage(pingHeader);
+        send(pingReq);
+
     }
 
     protected int createMessageId() {

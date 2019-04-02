@@ -21,13 +21,16 @@ import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.util.ServerUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use the encoder/decoder
@@ -56,28 +59,50 @@ public class MessageClientFactory {
         commonOptions = options;
     }
 
-    public static ClientOptions getCommonOptoins() {
-        return commonOptions;
+
+    public static <M extends MessageClient> M getAndCreateChannel(Class<M> clientClass) {
+        return getAndCreateChannel(clientClass, null);
     }
 
-    public static MessageClient getAndCreateChannel(ClientOptions srcOptions)
-        throws InterruptedException, CloneNotSupportedException {
-        ClientOptions options = srcOptions.clone();
-        ClientOptions.Node node = selectNode(srcOptions);
+    public static <M extends MessageClient> M getAndCreateChannel(Class<M> clientClass, List<String> speciallyTopics) {
+        if (commonOptions == null) {
+            throw new RuntimeException("设置客户端配置");
+        }
+
+        ClientOptions options = commonOptions.clone();
+        ClientOptions.Node node = selectNode(commonOptions);
         options.setSelectNode(node);
         Bootstrap bootstrap = NettyClientStarter.getInstance().getBootstrap();
-        Channel channel = bootstrap.connect(options.getSelectNode().getHost(), options.getSelectNode().getPort()).sync()
-            .channel();
+
         String clientId = createClientId();
         String pointTopic = "/topic/" + clientId;
         options.getTopics().add(pointTopic);
+        if (speciallyTopics != null && !speciallyTopics.isEmpty()) {
+            options.getTopics().addAll(speciallyTopics);
+        }
         addSystemTopics(options);
-        MqttNettyClient client = new MqttNettyClient(bootstrap, options, clientId, channel);
-        channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(client);
-        client.connect();
-        clients.add(client);
-        return client;
+
+
+        Channel channel = null;
+        try {
+            channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        M instance = null;
+        try {
+            Constructor<? extends MessageClient> constructor = clientClass.getDeclaredConstructor(Bootstrap.class, ClientOptions.class, String.class, Channel.class);
+            constructor.setAccessible(true);
+            instance = (M) constructor.newInstance(bootstrap, options, clientId, channel);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(instance);
+        instance.connect();
+        clients.add(instance);
+        return instance;
     }
+
 
     /**
      * 添加系统topics
@@ -136,12 +161,14 @@ public class MessageClientFactory {
     public synchronized static void reset() {
         logger.info("重置所有客户端:", clients.size());
         clients.forEach((client) -> {
-            client.getOptions().setAutoReconnect(false);
-            client.disconnect();
+            if (!(client instanceof SingletonClient)) {
+                client.getOptions().setAutoReconnect(false);
+                client.disconnect();
+            }
         });
-        clients = null;
-        clients = new ArrayList<>();
-        clientCount.set(0);
+        clients.clear();
+        clients.add(SingletonClient.getInstance());
+        clientCount.set(1);
     }
 
     private static volatile boolean isCloseAllIng;
@@ -154,6 +181,7 @@ public class MessageClientFactory {
         isCloseAllIng = true;
         logger.info("正在关闭所有客户端:", clients.size());
         clients.forEach((client) -> {
+
             client.disconnect();
         });
         isCloseAllIng = false;
