@@ -139,7 +139,7 @@ public abstract class AbstractMessageClient implements MessageClient {
     public void reconnect(boolean immediately) {
         if(!immediately){
             try {
-                TimeUnit.SECONDS.sleep(random.nextInt(10));
+                TimeUnit.MILLISECONDS.sleep(random.nextInt(20));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

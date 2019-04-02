@@ -1,19 +1,18 @@
 package com.xhg.mqtt;
 
-//import com.xhg.message.client.annotation.EnableScanTopic;
 import java.io.IOException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-//import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication(scanBasePackages = {"com.xhg.mqtt"})
-//@EnableDiscoveryClient
+@EnableDiscoveryClient
 //@EnableScanTopic
-public class MqttApplication {
+public class MqttServerApplication {
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        SpringApplication.run(MqttApplication.class, args);
+        SpringApplication.run(MqttServerApplication.class, args);
 
     }
 

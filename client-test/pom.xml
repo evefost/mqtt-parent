@@ -9,10 +9,10 @@
     <!--<version>1.0.3</version>-->
   <!--</parent>-->
   <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>1.5.10.RELEASE</version>
-    <relativePath/> <!-- lookup parent from repository -->
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-parent</artifactId>
+    <version>Edgware.SR3</version>
+    <relativePath/>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>client-test</artifactId>

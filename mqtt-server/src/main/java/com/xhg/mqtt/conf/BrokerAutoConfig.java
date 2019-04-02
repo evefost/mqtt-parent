@@ -3,6 +3,7 @@ package com.xhg.mqtt.conf;
 import com.xhg.mqtt.metrics.MetricsMqttListener;
 import com.xhg.mqtt.mq.PublisherListener;
 import com.xhg.mqtt.mq.SessionManager;
+import io.moquette.BrokerConstants;
 import io.moquette.broker.Server;
 import io.moquette.broker.SessionRegistry;
 import io.moquette.broker.config.ClasspathResourceLoader;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +37,11 @@ public class BrokerAutoConfig implements ApplicationContextAware, SmartInitializ
 
     @Autowired
     private Server broker;
+    @Value("${mqtt.port:1883}")
+    private String port;
+
+    @Value("${mqtt.host:0.0.0.0}")
+    private String host;
 
     @Bean
     public Server getServer() {
@@ -62,6 +69,8 @@ public class BrokerAutoConfig implements ApplicationContextAware, SmartInitializ
         List<? extends InterceptHandler> userHandlers = Collections.singletonList(new PublisherListener());
         MqttListener mqttListener = applicationContext.getBean(MetricsMqttListener.class);
         broker.setMqttListener(mqttListener);
+        classPathConfig.setProperty(BrokerConstants.PORT_PROPERTY_NAME, port);
+        classPathConfig.setProperty(BrokerConstants.HOST_PROPERTY_NAME, host);
         broker.startServer(classPathConfig, userHandlers);
         //Bind  a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

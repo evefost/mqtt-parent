@@ -82,13 +82,14 @@ public class ManagerController {
 
     }
 
-    @GetMapping("/close/all")
+    @GetMapping("/disconnect/all")
     boolean closeAll() {
-        SessionRegistry sessionRegistry = sessionManager.getSessionRegistry();
-        ConcurrentMap<String, Session> sessions = sessionRegistry.getSessions();
-        sessions.forEach((k,v)->{
-            v.closeImmediately();
-        });
+        MqttPublishMessage publish = MqttMessageBuilders.publish()
+            .topicName("/topic/disconnect")
+            .retained(false)
+            .qos(MqttQoS.AT_MOST_ONCE)
+            .payload(Unpooled.copiedBuffer("关闭所有客户端".getBytes(UTF_8))).build();
+        sessionManager.publish(publish);
         return true;
 
     }

@@ -50,6 +50,8 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
             logger.info("[{}]收到消息:{}", mqttChannel.getClientId(), header.topicName());
             if("/topic/reset".equals(topic)){
                 MessageClientFactory.reset();
+            }else if("/topic/disconnect".equals(topic)){
+                MessageClientFactory.closeAll();
             }else {
                 mqttChannel.onReceived(topic,publishMessage);
             }

@@ -38,6 +38,7 @@ import io.moquette.interception.InterceptHandler;
 import io.moquette.persistence.H2Builder;
 import io.moquette.persistence.MemorySubscriptionsRepository;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.util.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;

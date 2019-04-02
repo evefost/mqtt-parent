@@ -62,13 +62,6 @@ public class MqttClientController implements InitializingBean {
         for (int i = 0; i < count; i++) {
             try {
                 ClientOptions clone = options.clone();
-                List<String> topics = new ArrayList<>(2);
-                clone.setAutoReconnect(true);
-                String broadcastTopic = "/topic/all";
-                String resetTopic = "/topic/reset";
-                topics.add(resetTopic);
-                topics.add(broadcastTopic);
-                clone.setTopics(topics);
                 MessageClientFactory.getAndCreateChannel(clone);
             } catch (InterruptedException e) {
                 logger.error("连接通道失败");
@@ -82,13 +75,6 @@ public class MqttClientController implements InitializingBean {
     @GetMapping("/create")
     String createNettyClient() throws MqttException, InterruptedException, CloneNotSupportedException {
         ClientOptions clone = options.clone();
-        clone.setAutoReconnect(true);
-        List<String> topics = new ArrayList<>(2);
-        String broadcastTopic = "/topic/all";
-        String resetTopic = "/topic/reset";
-        topics.add(broadcastTopic);
-        topics.add(resetTopic);
-        clone.setTopics(topics);
         SingletonClient instance = SingletonClient.getInstance(clone);
         return instance.getClientId();
     }
@@ -97,7 +83,9 @@ public class MqttClientController implements InitializingBean {
     String send2(String topic) throws MqttException, CloneNotSupportedException, InterruptedException {
         String topic2 = "/topic/client-" + topic;
         logger.debug("发布的topic:{}", topic2);
-        MessageClient mqttClient = SingletonClient.getInstance(options);
+        ClientOptions clone = options.clone();
+        clone.setAutoReconnect(true);
+        MessageClient mqttClient = SingletonClient.getInstance(clone);
         MqttPublishMessage publish = MqttMessageBuilders.publish()
             .topicName(topic2)
             .retained(false)
@@ -137,7 +125,6 @@ public class MqttClientController implements InitializingBean {
         String topic2 = "/topic/all";
         logger.debug("发布的topic:{}", topic2);
         UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
-
         MessageClient client = nettyChannels.get(r.nextInt(nettyChannels.size()));
         Builder builder = buildBoxMessage(client.getClientId());
         MqttMessage message = builder.build();
@@ -155,9 +142,23 @@ public class MqttClientController implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        initClientOptions();
+    }
+
+    private void initClientOptions(){
         options = new ClientOptions();
+        options.setAutoReconnect(true);
         String[] nodes = {"127.0.0.1:1883"};
         options.setBrokerNodes(nodes);
+        List<String> topics = new ArrayList<>(10);
+        options.setAutoReconnect(true);
+        String broadcastTopic = "/topic/all";
+        String resetTopic = "/topic/reset";
+        String disconnectTopic = "/topic/disconnect";
+        topics.add(resetTopic);
+        topics.add(broadcastTopic);
+        topics.add(disconnectTopic);
+        options.setTopics(topics);
     }
 
 

@@ -1,5 +1,6 @@
 package com.xhg.mqtt.netty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,7 +16,7 @@ public class ClientOptions implements Cloneable{
 
     private int keepAlive=120;
 
-    private boolean autoReconnect;
+    private boolean autoReconnect=true;
 
     private Node selectNode;
 
@@ -62,6 +63,11 @@ public class ClientOptions implements Cloneable{
     @Override
     public ClientOptions clone() throws CloneNotSupportedException {
         ClientOptions clone = (ClientOptions) super.clone();
+        List<String> cloneTopics = new ArrayList<>(10);
+        for(String topic:topics){
+            cloneTopics.add(topic);
+        }
+        clone.setTopics(cloneTopics);
         return clone;
     }
 
