@@ -1,7 +1,5 @@
 package com.xhg.mqtt.controller;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.google.protobuf.ByteString;
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.common.EventCodeEnum;
@@ -18,14 +16,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.SmartInitializingSingleton;
@@ -34,6 +24,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Created by xieyang on 19/3/30.
@@ -46,7 +48,7 @@ public class MqttClientController implements SmartInitializingSingleton {
     private static final Logger logger = LoggerFactory.getLogger(MqttClientController.class);
 
     ExecutorService executorService = new ThreadPoolExecutor(10, 10000, 3000, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>());
+            new LinkedBlockingQueue<Runnable>());
 
     private Random r = new Random();
 
@@ -57,6 +59,8 @@ public class MqttClientController implements SmartInitializingSingleton {
     private String node;
 
     private ClientOptions options;
+
+    private AtomicInteger id = new AtomicInteger(0);
 
     @GetMapping("/create/netty")
     String createNettyClient(int count) throws InterruptedException {
@@ -73,7 +77,7 @@ public class MqttClientController implements SmartInitializingSingleton {
     }
 
     @GetMapping("/create")
-    String createNettyClient() throws  InterruptedException, CloneNotSupportedException {
+    String createNettyClient() throws InterruptedException, CloneNotSupportedException {
         SingletonClient instance = SingletonClient.getInstance(options);
         return instance.getClientId();
     }
@@ -86,29 +90,29 @@ public class MqttClientController implements SmartInitializingSingleton {
         clone.setAutoReconnect(true);
         MessageClient mqttClient = SingletonClient.getInstance(clone);
         MqttPublishMessage publish = MqttMessageBuilders.publish()
-            .topicName(topic2)
-            .retained(false)
-            .qos(MqttQoS.AT_MOST_ONCE)
-            .payload(Unpooled.copiedBuffer("ssssHello MQTT world!".getBytes(UTF_8))).build();
+                .topicName(topic2)
+                .retained(false)
+                .qos(MqttQoS.AT_MOST_ONCE)
+                .payload(Unpooled.copiedBuffer("ssssHello MQTT world!".getBytes(UTF_8))).build();
         mqttClient.send(publish);
         return "send success";
     }
 
 
     @GetMapping("/send")
-    String send(String topic)  {
+    String send(String topic) throws InterruptedException {
         String topic2 = "/topic/client-" + topic;
         logger.debug("发布的topic:{}", topic2);
-        UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
-        MessageClient client = nettyChannels.get(r.nextInt(nettyChannels.size()));
+        MessageClient client = SingletonClient.getInstance(options);
         Builder builder = buildBoxMessage(client.getClientId());
         MqttMessage message = builder.build();
         byte[] payload = message.toByteArray();
         MqttPublishMessage publish = MqttMessageBuilders.publish()
-            .topicName(topic2)
-            .retained(false)
-            .qos(MqttQoS.AT_MOST_ONCE)
-            .payload(Unpooled.copiedBuffer(payload)).build();
+                .topicName(topic2)
+                .messageId(id.incrementAndGet())
+                .retained(false)
+                .qos(MqttQoS.AT_LEAST_ONCE)
+                .payload(Unpooled.copiedBuffer(payload)).build();
         client.send(publish);
         return "send success";
     }
@@ -120,7 +124,7 @@ public class MqttClientController implements SmartInitializingSingleton {
     }
 
     @GetMapping("/broadcast")
-    String broadcast()  {
+    String broadcast() {
         String topic2 = "/topic/all";
         logger.debug("发布的topic:{}", topic2);
         UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
@@ -129,17 +133,17 @@ public class MqttClientController implements SmartInitializingSingleton {
         MqttMessage message = builder.build();
         byte[] payload = message.toByteArray();
         MqttPublishMessage publish = MqttMessageBuilders.publish()
-            .topicName(topic2)
-            .retained(false)
-            .qos(MqttQoS.AT_MOST_ONCE)
-            .payload(Unpooled.copiedBuffer(payload)).build();
+                .topicName(topic2)
+                .retained(true)
+                .qos(MqttQoS.AT_LEAST_ONCE)
+                .payload(Unpooled.copiedBuffer(payload)).build();
         client.send(publish);
         return "send success";
     }
 
 
     @RequestMapping(value = "/sendBoxInfo", method = RequestMethod.GET)
-    public String sendBoxInfo()  {
+    public String sendBoxInfo() {
 
         UnmodifiableArrayList<MessageClient> clients = MessageClientFactory.getNettyChannels();
 
@@ -153,16 +157,16 @@ public class MqttClientController implements SmartInitializingSingleton {
                     MqttMessage message = builder.build();
                     byte[] payload = message.toByteArray();
                     MqttPublishMessage publish = MqttMessageBuilders.publish()
-                        .topicName(topic)
-                        .retained(false)
-                        .qos(MqttQoS.AT_MOST_ONCE)
-                        .payload(Unpooled.copiedBuffer(payload)).build();
+                            .topicName(topic)
+                            .retained(false)
+                            .qos(MqttQoS.AT_MOST_ONCE)
+                            .payload(Unpooled.copiedBuffer(payload)).build();
                     client.send(publish);
                 }
             });
 
         }
-        return ""+clients.size();
+        return "" + clients.size();
     }
 
     private Builder buildBoxMessage(String clientId) {
@@ -192,7 +196,7 @@ public class MqttClientController implements SmartInitializingSingleton {
         return messageBuilder;
     }
 
-    private void initClientOptions(){
+    private void initClientOptions() {
         options = new ClientOptions();
         options.setKeepAlive(30);
         options.setAutoReconnect(true);
@@ -206,7 +210,7 @@ public class MqttClientController implements SmartInitializingSingleton {
         try {
             SingletonClient.getInstance(clone);
         } catch (Throwable e) {
-            logger.warn("初始化失败:",e);
+            logger.warn("初始化失败:", e);
         }
     }
 
