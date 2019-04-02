@@ -2,12 +2,14 @@ package com.xhg.mqtt.netty;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author xieyang
  * @date 19/3/31
  */
+@Component
 public class ClientOptions implements Cloneable{
 
     private String[] brokerNodes;
@@ -61,8 +63,13 @@ public class ClientOptions implements Cloneable{
     }
 
     @Override
-    public ClientOptions clone() throws CloneNotSupportedException {
-        ClientOptions clone = (ClientOptions) super.clone();
+    public ClientOptions clone() {
+        ClientOptions clone = null;
+        try {
+            clone = (ClientOptions) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
         List<String> cloneTopics = new ArrayList<>(10);
         for(String topic:topics){
             cloneTopics.add(topic);

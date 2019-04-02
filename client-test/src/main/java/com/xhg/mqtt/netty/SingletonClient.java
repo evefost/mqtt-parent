@@ -16,13 +16,12 @@
 
 package com.xhg.mqtt.netty;
 
+import static com.xhg.mqtt.common.SystemCmd.TEST_INCREASE_CLIENT;
+import static com.xhg.mqtt.netty.MessageClientFactory.addSystemTopics;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use
@@ -41,7 +40,7 @@ public class SingletonClient extends AbstractMessageClient {
 
     }
 
-    public static SingletonClient getInstance(ClientOptions options) throws InterruptedException, CloneNotSupportedException {
+    public static SingletonClient getInstance(ClientOptions options) throws InterruptedException {
         if (instance == null) {
             synchronized (NettyClientStarter.class) {
                 if (instance == null) {
@@ -52,13 +51,15 @@ public class SingletonClient extends AbstractMessageClient {
         return instance;
     }
 
-    private static SingletonClient createInstance(ClientOptions options) throws InterruptedException, CloneNotSupportedException {
-        ClientOptions.Node node = MessageClientFactory.selectNode(options);
+    private static SingletonClient createInstance(ClientOptions srcOptions) throws InterruptedException {
+        ClientOptions.Node node = MessageClientFactory.selectNode(srcOptions);
+        ClientOptions options = srcOptions.clone();
         options.setSelectNode(node);
-        String clientId = MessageClientFactory.createClientId();
+        String clientId = "main-"+MessageClientFactory.createClientId();
         String pointTopic="/topic/"+clientId;
         options.getTopics().add(pointTopic);
-        options.setSelectNode(node);
+        options.getTopics().add(TEST_INCREASE_CLIENT.getTopic());
+        addSystemTopics(options);
         Bootstrap bootstrap = NettyClientStarter.getInstance().getBootstrap();
         Channel channel = bootstrap.connect(options.getSelectNode().getHost(), options.getSelectNode().getPort()).sync().channel();
         SingletonClient singletonClient = new SingletonClient(bootstrap, options, clientId, channel);

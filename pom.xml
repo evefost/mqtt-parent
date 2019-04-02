@@ -8,20 +8,17 @@
         <!--<artifactId>xhg-micro-parent</artifactId>-->
         <!--<version>1.0.3</version>-->
     <!--</parent>-->
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.10.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
-    <groupId>com.xie</groupId>
+
+    <groupId>com.xhg</groupId>
     <artifactId>mqtt-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <name>${artifactId}-${project.version}</name>
     <modules>
         <module>broker</module>
-        <module>mqtt-server</module>
+        <module>xhg-mqtt-server</module>
         <module>client-test</module>
+        <module>xhg-mqtt-common</module>
     </modules>
 
     <properties>

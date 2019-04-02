@@ -10,6 +10,7 @@
   <artifactId>broker</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
+  <name>${artifactId}-${project.version}</name>
   <properties>
     <java.version>1.8</java.version>
     <io.netty.version>4.1.29.Final</io.netty.version>

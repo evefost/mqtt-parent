@@ -16,16 +16,30 @@
 
 package com.xhg.mqtt.netty;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+import static io.netty.channel.ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE;
+import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
+import static io.netty.handler.codec.mqtt.MqttMessageType.CONNACK;
+import static io.netty.handler.codec.mqtt.MqttMessageType.PUBLISH;
+import static io.netty.handler.codec.mqtt.MqttMessageType.SUBACK;
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+
+import com.xhg.mqtt.handler.HandlerDispatcher;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.mqtt.*;
+import io.netty.handler.codec.mqtt.MqttFixedHeader;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttPubAckMessage;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
-import static io.netty.handler.codec.mqtt.MqttMessageType.*;
 
 @ChannelHandler.Sharable
 public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
@@ -34,26 +48,24 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
     public static final String ATTR_CLIENT_CHANNEL = "client_channel";
 
-    public static final AttributeKey<AbstractMessageClient> ATTR_KEY_CLIENT_CHANNEL = AttributeKey.valueOf(ATTR_CLIENT_CHANNEL);
-
+    public static final AttributeKey<AbstractMessageClient> ATTR_KEY_CLIENT_CHANNEL = AttributeKey
+        .valueOf(ATTR_CLIENT_CHANNEL);
 
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         MqttMessage msg = (MqttMessage) message;
         MqttFixedHeader mqttFixedHeader = msg.fixedHeader();
-        AbstractMessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
+        AbstractMessageClient mqttChannel = ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
         if (mqttFixedHeader.messageType() == PUBLISH) {
             MqttPublishMessage publishMessage = (MqttPublishMessage) message;
             MqttPublishVariableHeader header = publishMessage.variableHeader();
             String topic = header.topicName();
-            logger.info("[{}]收到消息:{}", mqttChannel.getClientId(), header.topicName());
-            if("/topic/reset".equals(topic)){
-                MessageClientFactory.reset();
-            }else if("/topic/disconnect".equals(topic)){
-                MessageClientFactory.closeAll();
-            }else {
-                mqttChannel.onReceived(topic,publishMessage);
+            final int messageID = header.packetId();
+            logger.info("[{}]收到消息:[{}][{}]", mqttChannel.getClientId(), messageID, header.topicName());
+            //sendPubAck(ctx.channel(),messageID);
+            if (!HandlerDispatcher.process(msg)) {
+                mqttChannel.onReceived(topic, publishMessage);
             }
         } else if (mqttFixedHeader.messageType() == CONNACK) {
             logger.info("[{}] 连接成功", mqttChannel.getClientId());
@@ -65,6 +77,12 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
         } else {
             logger.info("Received a message of type {}", msg.fixedHeader().messageType());
         }
+    }
+
+    private void increaseClients(MqttPublishMessage mqttMessage) {
+        ByteBuf byteBuf = mqttMessage.payload();
+        byte[] payload = new byte[byteBuf.readableBytes()];
+        byteBuf.readBytes(payload);
     }
 
     @Override
@@ -84,18 +102,35 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
+        throws Exception {
         ctx.close().addListener(CLOSE_ON_FAILURE);
         MessageClient client = getClient(ctx);
-        if(client != null){
+        if (client != null) {
             client.onClosed(cause);
         }
     }
 
-    private MessageClient getClient(ChannelHandlerContext ctx){
-        AbstractMessageClient mqttChannel =  ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
+    private MessageClient getClient(ChannelHandlerContext ctx) {
+        AbstractMessageClient mqttChannel = ctx.channel().attr(ATTR_KEY_CLIENT_CHANNEL).get();
         return mqttChannel;
     }
 
+    void sendPubAck(Channel channel, int messageID) {
+        logger.trace("sendPubAck invoked");
+        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBACK, false, AT_MOST_ONCE,
+            false, 0);
+        MqttPubAckMessage pubAckMessage = new MqttPubAckMessage(fixedHeader, from(messageID));
+        sendIfWritableElseDrop(channel, pubAckMessage);
+    }
 
+    void sendIfWritableElseDrop(Channel channel, MqttMessage msg) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("OUT {} on channel {}", msg.fixedHeader().messageType(), channel);
+        }
+        if (channel.isWritable()) {
+            ChannelFuture channelFuture;
+            channelFuture = channel.writeAndFlush(msg);
+            channelFuture.addListener(FIRE_EXCEPTION_ON_FAILURE);
+        }
+    }
 }

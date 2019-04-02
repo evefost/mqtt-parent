@@ -4,12 +4,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.protobuf.ByteString;
 import com.sun.javafx.UnmodifiableArrayList;
-import com.xhg.mqtt.mq.EventCodeEnum;
-import com.xhg.mqtt.mq.proto.BoxInfoPb.BoxInfo;
-import com.xhg.mqtt.mq.proto.BoxInfoPb.BoxStatus;
-import com.xhg.mqtt.mq.proto.MqttMessagePb.MqttHead;
-import com.xhg.mqtt.mq.proto.MqttMessagePb.MqttMessage;
-import com.xhg.mqtt.mq.proto.MqttMessagePb.MqttMessage.Builder;
+import com.xhg.mqtt.common.EventCodeEnum;
+import com.xhg.mqtt.common.proto.BoxInfoPb.BoxInfo;
+import com.xhg.mqtt.common.proto.BoxInfoPb.BoxStatus;
+import com.xhg.mqtt.common.proto.MqttMessagePb.MqttHead;
+import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage;
+import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage.Builder;
 import com.xhg.mqtt.netty.ClientOptions;
 import com.xhg.mqtt.netty.MessageClient;
 import com.xhg.mqtt.netty.MessageClientFactory;
@@ -18,7 +18,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -27,10 +26,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import org.eclipse.paho.client.mqttv3.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("client")
-public class MqttClientController implements InitializingBean {
+public class MqttClientController implements SmartInitializingSingleton {
 
 
     private static final Logger logger = LoggerFactory.getLogger(MqttClientController.class);
@@ -55,14 +53,16 @@ public class MqttClientController implements InitializingBean {
     @Value("${product-key:}")
     private String productKey;
 
+    @Value("${mqtt.broker.node:}")
+    private String node;
+
     private ClientOptions options;
 
     @GetMapping("/create/netty")
-    String createNettyClient(int count) throws MqttException, InterruptedException {
+    String createNettyClient(int count) throws InterruptedException {
         for (int i = 0; i < count; i++) {
             try {
-                ClientOptions clone = options.clone();
-                MessageClientFactory.getAndCreateChannel(clone);
+                MessageClientFactory.getAndCreateChannel(options);
             } catch (InterruptedException e) {
                 logger.error("连接通道失败");
             } catch (Exception e) {
@@ -73,14 +73,13 @@ public class MqttClientController implements InitializingBean {
     }
 
     @GetMapping("/create")
-    String createNettyClient() throws MqttException, InterruptedException, CloneNotSupportedException {
-        ClientOptions clone = options.clone();
-        SingletonClient instance = SingletonClient.getInstance(clone);
+    String createNettyClient() throws  InterruptedException, CloneNotSupportedException {
+        SingletonClient instance = SingletonClient.getInstance(options);
         return instance.getClientId();
     }
 
     @GetMapping("/send2")
-    String send2(String topic) throws MqttException, CloneNotSupportedException, InterruptedException {
+    String send2(String topic) throws CloneNotSupportedException, InterruptedException {
         String topic2 = "/topic/client-" + topic;
         logger.debug("发布的topic:{}", topic2);
         ClientOptions clone = options.clone();
@@ -97,7 +96,7 @@ public class MqttClientController implements InitializingBean {
 
 
     @GetMapping("/send")
-    String send(String topic) throws MqttException {
+    String send(String topic)  {
         String topic2 = "/topic/client-" + topic;
         logger.debug("发布的topic:{}", topic2);
         UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
@@ -115,13 +114,13 @@ public class MqttClientController implements InitializingBean {
     }
 
     @GetMapping("/reset")
-    String reset() throws MqttException {
+    String reset() {
         MessageClientFactory.reset();
         return "send success";
     }
 
     @GetMapping("/broadcast")
-    String broadcast() throws MqttException {
+    String broadcast()  {
         String topic2 = "/topic/all";
         logger.debug("发布的topic:{}", topic2);
         UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
@@ -139,31 +138,8 @@ public class MqttClientController implements InitializingBean {
     }
 
 
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        initClientOptions();
-    }
-
-    private void initClientOptions(){
-        options = new ClientOptions();
-        options.setAutoReconnect(true);
-        String[] nodes = {"127.0.0.1:1883"};
-        options.setBrokerNodes(nodes);
-        List<String> topics = new ArrayList<>(10);
-        options.setAutoReconnect(true);
-        String broadcastTopic = "/topic/all";
-        String resetTopic = "/topic/reset";
-        String disconnectTopic = "/topic/disconnect";
-        topics.add(resetTopic);
-        topics.add(broadcastTopic);
-        topics.add(disconnectTopic);
-        options.setTopics(topics);
-    }
-
-
     @RequestMapping(value = "/sendBoxInfo", method = RequestMethod.GET)
-    public String sendBoxInfo() throws MqttException {
+    public String sendBoxInfo()  {
 
         UnmodifiableArrayList<MessageClient> clients = MessageClientFactory.getNettyChannels();
 
@@ -216,5 +192,26 @@ public class MqttClientController implements InitializingBean {
         return messageBuilder;
     }
 
+    private void initClientOptions(){
+        options = new ClientOptions();
+        options.setKeepAlive(30);
+        options.setAutoReconnect(true);
+        String[] nodes = {node};
+        options.setBrokerNodes(nodes);
+        List<String> topics = new ArrayList<>(10);
+        options.setAutoReconnect(true);
+        options.setTopics(topics);
+        MessageClientFactory.setCommonOptoins(options);
+        ClientOptions clone = options.clone();
+        try {
+            SingletonClient.getInstance(clone);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
+    @Override
+    public void afterSingletonsInstantiated() {
+        initClientOptions();
+    }
 }

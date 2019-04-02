@@ -16,21 +16,28 @@
 
 package com.xhg.mqtt.netty;
 
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+
 import com.sun.javafx.UnmodifiableArrayList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.mqtt.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.netty.handler.codec.mqtt.MqttConnectMessage;
+import io.netty.handler.codec.mqtt.MqttConnectPayload;
+import io.netty.handler.codec.mqtt.MqttConnectVariableHeader;
+import io.netty.handler.codec.mqtt.MqttFixedHeader;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttMessageBuilders;
+import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttQoS;
+import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
+import io.netty.handler.codec.mqtt.MqttVersion;
 import java.util.Random;
-import java.util.Timer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -55,9 +62,13 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     private int reconnectTimes;
 
+    private int maxReconnectTimes = 10;
+
     protected Random random = new Random();
 
     private final static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+
 
     private volatile static boolean pingTaskStart;
 
@@ -76,7 +87,7 @@ public abstract class AbstractMessageClient implements MessageClient {
                 false, 0);
         MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
                 MqttVersion.MQTT_3_1.protocolName(), MqttVersion.MQTT_3_1.protocolLevel(), false, false, false, 1, false,
-                true, options.getKeepAlive());
+                true, options.getKeepAlive()+30);
         MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientId, null, null,
                 null, (byte[]) null);
         MqttConnectMessage message = new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
@@ -119,15 +130,16 @@ public abstract class AbstractMessageClient implements MessageClient {
     }
 
 
+
     @Override
     public void onClosed(Throwable cause) {
         if (cause != null) {
-            logger.error("[{}]异常关闭", clientId, cause);
+            logger.error("[{}]连接异常关闭", clientId, cause);
         } else {
-            logger.warn("[{}]关闭", clientId);
+            logger.warn("[{}]连接关闭", clientId);
         }
         if (options.isAutoReconnect()) {
-            if (!channel.isActive() && reconnectTimes < 5) {
+            if (!channel.isActive() && reconnectTimes < maxReconnectTimes) {
                 reconnectTimes++;
                 reconnect(false);
             }
@@ -139,7 +151,8 @@ public abstract class AbstractMessageClient implements MessageClient {
     public void reconnect(boolean immediately) {
         if(!immediately){
             try {
-                TimeUnit.MILLISECONDS.sleep(random.nextInt(20));
+                int step = (int) Math.pow(10,reconnectTimes);
+                TimeUnit.MILLISECONDS.sleep(random.nextInt(step));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -158,12 +171,12 @@ public abstract class AbstractMessageClient implements MessageClient {
     }
 
 
-    public synchronized void startPingTask(int keepAlive) {
+    protected synchronized void startPingTask(int keepAlive) {
         if (pingTaskStart) {
             return;
         }
         pingTaskStart = true;
-        executorService.scheduleAtFixedRate(new PingTask(), 0, 100, TimeUnit.SECONDS);
+        executorService.scheduleAtFixedRate(new PingTask(), 0, keepAlive, TimeUnit.SECONDS);
     }
 
     public class PingTask implements Runnable {

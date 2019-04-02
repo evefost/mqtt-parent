@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
   <!--<parent>-->
   <!--<groupId>com.xhg</groupId>-->
   <!--<artifactId>xhg-micro-parent</artifactId>-->
@@ -14,27 +13,17 @@
     <version>Edgware.SR3</version>
     <relativePath/>
   </parent>
+
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>client-test</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
+  <artifactId>xhg-mqtt-server</artifactId>
   <name>${artifactId}-${project.version}</name>
   <properties>
     <java.version>1.8</java.version>
-    <io.netty.version>4.1.29.Final</io.netty.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.source>${java.version}</maven.compiler.source>
-    <maven.compiler.target>${java.version}</maven.compiler.target>
     <proto.version>3.6.0</proto.version>
   </properties>
-
-
   <dependencies>
-    <dependency>
-      <groupId>com.xhg</groupId>
-      <artifactId>xhg-mqtt-common</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
     <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-eureka</artifactId>
@@ -44,40 +33,54 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-transport</artifactId>
-      <version>${io.netty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-handler</artifactId>
-      <version>${io.netty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-codec</artifactId>
-      <version>${io.netty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-codec-mqtt</artifactId>
-      <version>${io.netty.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>${proto.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.xhg</groupId>
+      <artifactId>broker</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.paho</groupId>
+          <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <!--<dependency>-->
+    <!--<groupId>com.xhg</groupId>-->
+    <!--<version>1.3.2</version>-->
+    <!--<artifactId>xhg-message-client</artifactId>-->
+    <!--</dependency>-->
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-spring-legacy</artifactId>
+      <version>1.0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>1.0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
       <version>1.2.7</version>
+    </dependency>
+    <dependency>
+      <groupId>com.xhg</groupId>
+      <artifactId>xhg-mqtt-common</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <!--<repositories>-->
@@ -88,4 +91,17 @@
   <!--<layout>default</layout>-->
   <!--</repository>-->
   <!--</repositories>-->
+
+  <build>
+
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+
+  </build>
+
+
 </project>

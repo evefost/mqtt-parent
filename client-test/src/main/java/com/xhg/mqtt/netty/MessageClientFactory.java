@@ -17,17 +17,17 @@
 package com.xhg.mqtt.netty;
 
 import com.sun.javafx.UnmodifiableArrayList;
+import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.util.ServerUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import java.net.InetAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use the encoder/decoder
@@ -46,9 +46,23 @@ public class MessageClientFactory {
     private static AtomicInteger clientCount = new AtomicInteger(0);
 
 
-    public static MessageClient getAndCreateChannel(ClientOptions options)
+    private static ClientOptions commonOptoins;
+    private static String host;
+
+    private static volatile boolean isLoadHost;
+
+    public static void setCommonOptoins(ClientOptions optoins) {
+        commonOptoins = optoins;
+    }
+
+    public static ClientOptions getCommonOptoins() {
+        return commonOptoins;
+    }
+
+    public static MessageClient getAndCreateChannel(ClientOptions srcOptions)
         throws InterruptedException, CloneNotSupportedException {
-        ClientOptions.Node node = selectNode(options);
+        ClientOptions options = srcOptions.clone();
+        ClientOptions.Node node = selectNode(srcOptions);
         options.setSelectNode(node);
         Bootstrap bootstrap = NettyClientStarter.getInstance().getBootstrap();
         Channel channel = bootstrap.connect(options.getSelectNode().getHost(), options.getSelectNode().getPort()).sync()
@@ -56,11 +70,24 @@ public class MessageClientFactory {
         String clientId = createClientId();
         String pointTopic = "/topic/" + clientId;
         options.getTopics().add(pointTopic);
+        addSystemTopics(options);
         MqttNettyClient client = new MqttNettyClient(bootstrap, options, clientId, channel);
         channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(client);
         client.connect();
         clients.add(client);
         return client;
+    }
+
+    /**
+     * 添加系统topics
+     */
+    static void addSystemTopics(ClientOptions options) {
+        SystemCmd[] values = SystemCmd.values();
+        for (SystemCmd cmd : values) {
+            if (cmd != SystemCmd.TEST_INCREASE_CLIENT) {
+                options.getTopics().add(cmd.getTopic());
+            }
+        }
     }
 
 
@@ -86,38 +113,11 @@ public class MessageClientFactory {
         return node1;
 
     }
-    private static volatile boolean isCloseAll;
-    public synchronized static void reset() {
-        logger.info("重置所有客户端:",clients.size());
-        clients.forEach((client) -> {
-            client.getOptions().setAutoReconnect(false);
-            client.disconnect();
-        });
-        clients = null;
-        clients = new ArrayList<>();
-        clientCount.set(0);
-    }
 
 
-
-    public synchronized static void closeAll() {
-        if(isCloseAll){
-            return;
-        }
-        isCloseAll =true;
-        logger.info("正在关闭所有客户端:",clients.size());
-        clients.forEach((client) -> {
-            client.disconnect();
-        });
-        isCloseAll =false;
-    }
-
-    private static String host;
-    private static volatile boolean isLoadHost;
-
-    public static String createClientId() {
-        if(isLoadHost){
-            return  host + "-" + clientCount.incrementAndGet();
+    static String createClientId() {
+        if (isLoadHost) {
+            return host + "-" + clientCount.incrementAndGet();
         }
         try {
             InetAddress localHostLANAddress = ServerUtils.getLocalHostLANAddress();
@@ -130,5 +130,33 @@ public class MessageClientFactory {
         String clientId = "device-" + clientCount.incrementAndGet();
         return clientId;
     }
+
+
+    public synchronized static void reset() {
+        logger.info("重置所有客户端:", clients.size());
+        clients.forEach((client) -> {
+            client.getOptions().setAutoReconnect(false);
+            client.disconnect();
+        });
+        clients = null;
+        clients = new ArrayList<>();
+        clientCount.set(0);
+    }
+
+    private static volatile boolean isCloseAllIng;
+
+    public static void closeAll() {
+        //关闭中，所有请求都丢掉
+        if (isCloseAllIng) {
+            return;
+        }
+        isCloseAllIng = true;
+        logger.info("正在关闭所有客户端:", clients.size());
+        clients.forEach((client) -> {
+            client.disconnect();
+        });
+        isCloseAllIng = false;
+    }
+
 
 }
