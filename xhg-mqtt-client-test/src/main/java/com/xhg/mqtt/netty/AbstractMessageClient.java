@@ -35,7 +35,7 @@ import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 /**
  * @author xieyang
  */
-public abstract class AbstractMessageClient implements MessageClient {
+public abstract class AbstractMessageClient implements MessageClient<MqttPublishMessage> {
 
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractMessageClient.class);
