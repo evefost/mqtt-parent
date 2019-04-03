@@ -194,7 +194,7 @@ public class MessageClientFactory {
     /**
      * disconnect 将不自动重连
      */
-    public static void disconnect(int count) {
+    public synchronized static void disconnect(int count) {
         int disconnectCount = count <= 0 ? clients.size() : count;
         logger.info("正在断开客户端连接数[{}]", disconnectCount);
         List<MessageClient> aliveClients = new ArrayList<>();
@@ -209,7 +209,7 @@ public class MessageClientFactory {
         }
         clients.clear();
         clients.addAll(aliveClients);
-        clientCount.set(clients.size());
+        clientCount.set(clients.size()+1);
     }
 }
 
