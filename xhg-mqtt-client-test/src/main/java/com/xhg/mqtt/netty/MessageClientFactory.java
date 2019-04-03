@@ -16,6 +16,8 @@
 
 package com.xhg.mqtt.netty;
 
+import static com.xhg.mqtt.common.Constants.SYSTEM_CONTROL_PATTERN;
+
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.util.ServerUtils;
@@ -58,11 +60,18 @@ public class MessageClientFactory {
     }
 
 
-    public static <M extends MessageClient> M getAndCreateChannel(Class<M> clientClass) {
-        return getAndCreateChannel(clientClass, null);
+    /**
+     * @param isMainClient 主客户端与其它客户端添加的题题不太一样
+     */
+    public static <M extends MessageClient> M getAndCreateChannel(Class<M> clientClass, boolean isMainClient) {
+        return getAndCreateChannel(clientClass, null, isMainClient);
     }
 
-    public static <M extends MessageClient> M getAndCreateChannel(Class<M> clientClass, List<String> speciallyTopics) {
+    /**
+     * @param isMainClient isMainClient 主客户端与其它客户端添加的题题不太一样
+     */
+    public static <M extends MessageClient> M getAndCreateChannel(Class<M> clientClass, List<String> speciallyTopics,
+        boolean isMainClient) {
         if (commonOptions == null) {
             throw new RuntimeException("设置客户端配置");
         }
@@ -78,9 +87,7 @@ public class MessageClientFactory {
         if (speciallyTopics != null && !speciallyTopics.isEmpty()) {
             options.getTopics().addAll(speciallyTopics);
         }
-        addSystemTopics(options);
-
-
+        addSystemTopics(options, isMainClient);
         Channel channel = null;
         try {
             channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
@@ -89,7 +96,8 @@ public class MessageClientFactory {
         }
         M instance = null;
         try {
-            Constructor<? extends MessageClient> constructor = clientClass.getDeclaredConstructor(Bootstrap.class, ClientOptions.class, String.class, Channel.class);
+            Constructor<? extends MessageClient> constructor = clientClass
+                .getDeclaredConstructor(Bootstrap.class, ClientOptions.class, String.class, Channel.class);
             constructor.setAccessible(true);
             instance = (M) constructor.newInstance(bootstrap, options, clientId, channel);
         } catch (Exception e) {
@@ -105,17 +113,28 @@ public class MessageClientFactory {
     /**
      * 添加系统topics
      */
-    static void addSystemTopics(ClientOptions options) {
+    static void addSystemTopics(ClientOptions options, boolean isMainClient) {
         SystemCmd[] values = SystemCmd.values();
         for (SystemCmd cmd : values) {
-            if (cmd != SystemCmd.TEST_INCREASE_CLIENT) {
+
+            if (isMainClient) {
+                options.getTopics().add(cmd.getTopic());
+            } else if (!isMain(cmd)) {
+                //普通连接不添加/SYSTEM_CONTROL_PATERN特征主题
                 options.getTopics().add(cmd.getTopic());
             }
         }
     }
 
+    static strictfp boolean isMain(SystemCmd cmd) {
+        if (cmd.getTopic().startsWith(SYSTEM_CONTROL_PATTERN)) {
+            return true;
+        }
+        return false;
+    }
 
-    public static UnmodifiableArrayList<MessageClient> getNettyChannels() {
+
+    public static UnmodifiableArrayList<MessageClient> getClients() {
         MessageClient[] array = new MessageClient[clients.size()];
         clients.toArray(array);
         return new UnmodifiableArrayList<>(array, array.length);
@@ -155,54 +174,42 @@ public class MessageClientFactory {
         return clientId;
     }
 
+    /**
+     * 重置客户端会自动重连
+     */
+    public static void reset(int count) {
 
-    public synchronized static void reset(int count) {
-        boolean resetAll = count==0?true:false;
-        if(resetAll){
-            logger.info("重置客户端连接[{}]", clients.size());
-            clients.forEach((client) -> {
-                //SingletonClient不能重置，要用来通信用的
-                if (!(client instanceof SingletonClient)) {
-                    client.getOptions().setAutoReconnect(false);
-                    client.disconnect();
-                }
-            });
-            clients.clear();
-            clients.add(SingletonClient.getInstance());
-            clientCount.set(1);
-        }else {
-            logger.info("重置客户端连接[{}]", count);
-            for(MessageClient client:clients){
-                if(count<1){
-                  break;
-                }
-                if (!(client instanceof SingletonClient)) {
-                    client.getOptions().setAutoReconnect(false);
-                    client.disconnect();
-                    count++;
-                }
+        int disconnectCount = count <= 0 ? clients.size() : count;
+        logger.info("正在重置客户端连接[{}]", disconnectCount);
+        for (MessageClient client : clients) {
+            if (disconnectCount < 1) {
+                break;
+            } else if (!(client instanceof SingletonClient)) {
+                client.disconnect();
+                disconnectCount--;
             }
         }
-
-
-
     }
 
-    private static volatile boolean isCloseAllIng;
-
+    /**
+     * disconnect 将不自动重连
+     */
     public static void disconnect(int count) {
-        //关闭中，所有请求都丢掉
-        if (isCloseAllIng) {
-            return;
+        int disconnectCount = count <= 0 ? clients.size() : count;
+        logger.info("正在断开客户端连接数[{}]", disconnectCount);
+        List<MessageClient> aliveClients = new ArrayList<>();
+        for (MessageClient client : clients) {
+            if (disconnectCount < 1) {
+                aliveClients.add(client);
+            } else if (!(client instanceof SingletonClient)) {
+                client.getOptions().setAutoReconnect(false);
+                client.disconnect();
+                disconnectCount--;
+            }
         }
-        isCloseAllIng = true;
-        logger.info("正在关闭所有客户端:", clients.size());
-        clients.forEach((client) -> {
-
-            client.disconnect();
-        });
-        isCloseAllIng = false;
+        clients.clear();
+        clients.addAll(aliveClients);
+        clientCount.set(clients.size());
     }
-
-
 }
+

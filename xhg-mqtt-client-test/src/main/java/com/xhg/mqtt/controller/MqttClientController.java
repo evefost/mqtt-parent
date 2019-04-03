@@ -67,13 +67,13 @@ public class MqttClientController implements SmartInitializingSingleton {
     String createNettyClient(int count) throws InterruptedException {
         for (int i = 0; i < count; i++) {
             try {
-                MessageClientFactory.getAndCreateChannel(MqttNettyClient.class);
+                MessageClientFactory.getAndCreateChannel(MqttNettyClient.class,false);
             } catch (Exception e) {
                 logger.error("连接通道失败", e);
 
             }
         }
-        return MessageClientFactory.getNettyChannels().size() + "";
+        return MessageClientFactory.getClients().size() + "";
     }
 
     @GetMapping("/create")
@@ -122,7 +122,7 @@ public class MqttClientController implements SmartInitializingSingleton {
     String broadcast() {
         String topic2 = "/topic/all";
         logger.debug("发布的topic:{}", topic2);
-        UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
+        UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getClients();
         MessageClient client = nettyChannels.get(r.nextInt(nettyChannels.size()));
         Builder builder = buildBoxMessage(client.getClientId());
         MqttMessage message = builder.build();
@@ -140,7 +140,7 @@ public class MqttClientController implements SmartInitializingSingleton {
     @RequestMapping(value = "/sendBoxInfo", method = RequestMethod.GET)
     public String sendBoxInfo() {
 
-        UnmodifiableArrayList<MessageClient> clients = MessageClientFactory.getNettyChannels();
+        UnmodifiableArrayList<MessageClient> clients = MessageClientFactory.getClients();
 
         for (MessageClient client : clients) {
             executorService.submit(new Runnable() {

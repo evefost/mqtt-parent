@@ -1,6 +1,5 @@
 package com.xhg.mqtt.netty;
 
-import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 /**
@@ -10,7 +9,7 @@ public interface MessageClient {
 
     String getClientId();
 
-    void send(MqttMessage msg);
+    void send(MqttPublishMessage msg);
 
     void onReceived(String topic,MqttPublishMessage msg);
 

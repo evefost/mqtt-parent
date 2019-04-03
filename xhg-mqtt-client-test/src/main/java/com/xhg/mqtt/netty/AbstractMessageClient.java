@@ -28,6 +28,7 @@ import io.netty.handler.codec.mqtt.MqttFixedHeader;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttVersion;
@@ -62,7 +63,7 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     private int reconnectTimes;
 
-    private int maxReconnectTimes = 10;
+    private int maxReconnectTimes = 30;
 
     protected Random random = new Random();
 
@@ -93,7 +94,7 @@ public abstract class AbstractMessageClient implements MessageClient {
         MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientId, null, null,
                 null, (byte[]) null);
         MqttConnectMessage message = new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
-        send(message);
+        channel.writeAndFlush(message);
     }
 
 
@@ -116,7 +117,7 @@ public abstract class AbstractMessageClient implements MessageClient {
         MqttFixedHeader pingHeader = new MqttFixedHeader(MqttMessageType.PINGREQ, false, AT_MOST_ONCE,
                 false, 0);
         MqttMessage pingReq = new MqttMessage(pingHeader);
-        send(pingReq);
+        channel.writeAndFlush(pingReq);
 
     }
 
@@ -131,7 +132,10 @@ public abstract class AbstractMessageClient implements MessageClient {
 
 
     @Override
-    public void send(MqttMessage mqttMessage) {
+    public void send(MqttPublishMessage mqttMessage) {
+        if(logger.isDebugEnabled()){
+            logger.debug("[{}]发送消息[{}}",clientId,mqttMessage.variableHeader().topicName());
+        }
         channel.writeAndFlush(mqttMessage);
     }
 
@@ -157,7 +161,7 @@ public abstract class AbstractMessageClient implements MessageClient {
         if(!immediately){
             try {
                 reconnectTimes++;
-                int step = (int) Math.pow(10,reconnectTimes);
+                int step = (int) Math.pow(5,reconnectTimes);
                 TimeUnit.MILLISECONDS.sleep(random.nextInt(step));
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -194,13 +198,13 @@ public abstract class AbstractMessageClient implements MessageClient {
 
         @Override
         public void run() {
-            UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getNettyChannels();
+            UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getClients();
             logger.debug("ping channels:[{}]", nettyChannels.size());
             nettyChannels.forEach((c) -> {
                 AbstractMessageClient messageClient = (AbstractMessageClient) c;
                 if(messageClient.connected()){
                     messageClient.ping();
-                }else if(reconnectTimes<maxReconnectTimes){
+                }else {
                     reconnect(true);
                 }
 
@@ -215,7 +219,7 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     @Override
     public void disconnect() {
-        if(channel.isOpen()){
+        if(channel.isActive()){
             channel.close();
         }
     }

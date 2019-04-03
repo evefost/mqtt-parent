@@ -7,6 +7,8 @@ import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 public abstract class AbstractMqttPublishHandler extends AbstractHandler<MqttPublishMessage>  {
 
+
+
     @Override
     public <O> O decodeContent(MqttPublishMessage message, Class<O> outputClass) {
         ByteBuf byteBuf =  message.payload();
@@ -15,6 +17,8 @@ public abstract class AbstractMqttPublishHandler extends AbstractHandler<MqttPub
         O content = JSON.parseObject(new String(payload), outputClass);
         return content;
     }
+
+
 
 
 

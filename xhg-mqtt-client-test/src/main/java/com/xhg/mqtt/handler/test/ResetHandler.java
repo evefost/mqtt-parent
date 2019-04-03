@@ -10,10 +10,11 @@ import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import org.springframework.stereotype.Component;
 
 /**
+ * 重置客户端连接
  * @author xie
  */
 @Component
-public class ResetClientsHandler  extends AbstractMqttPublishHandler {
+public class ResetHandler extends AbstractMqttPublishHandler {
 
     @Override
     public boolean support(Object object) {

@@ -10,10 +10,11 @@ import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import org.springframework.stereotype.Component;
 
 /**
+ * 关闭客户端连接
  * @author xie
  */
 @Component
-public class DisconnectClientHandler  extends AbstractMqttPublishHandler {
+public class DisconnectHandler extends AbstractMqttPublishHandler {
 
     @Override
     public boolean support(Object object) {
