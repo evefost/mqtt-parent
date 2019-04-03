@@ -2,9 +2,19 @@ package com.xhg.mqtt.common.bo;
 
 import com.alibaba.fastjson.JSON;
 
-public class IncreaseClient {
+public class ChangeClientNumber {
 
-    private int count=0;
+    private String description;
+
+    private int count = 0;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public int getCount() {
         return count;

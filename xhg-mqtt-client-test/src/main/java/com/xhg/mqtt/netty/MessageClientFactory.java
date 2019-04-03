@@ -21,16 +21,14 @@ import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.util.ServerUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use the encoder/decoder
@@ -158,22 +156,41 @@ public class MessageClientFactory {
     }
 
 
-    public synchronized static void reset() {
-        logger.info("重置所有客户端:", clients.size());
-        clients.forEach((client) -> {
-            if (!(client instanceof SingletonClient)) {
-                client.getOptions().setAutoReconnect(false);
-                client.disconnect();
+    public synchronized static void reset(int count) {
+        boolean resetAll = count==0?true:false;
+        if(resetAll){
+            logger.info("重置客户端连接[{}]", clients.size());
+            clients.forEach((client) -> {
+                //SingletonClient不能重置，要用来通信用的
+                if (!(client instanceof SingletonClient)) {
+                    client.getOptions().setAutoReconnect(false);
+                    client.disconnect();
+                }
+            });
+            clients.clear();
+            clients.add(SingletonClient.getInstance());
+            clientCount.set(1);
+        }else {
+            logger.info("重置客户端连接[{}]", count);
+            for(MessageClient client:clients){
+                if(count<1){
+                  break;
+                }
+                if (!(client instanceof SingletonClient)) {
+                    client.getOptions().setAutoReconnect(false);
+                    client.disconnect();
+                    count++;
+                }
             }
-        });
-        clients.clear();
-        clients.add(SingletonClient.getInstance());
-        clientCount.set(1);
+        }
+
+
+
     }
 
     private static volatile boolean isCloseAllIng;
 
-    public static void closeAll() {
+    public static void disconnect(int count) {
         //关闭中，所有请求都丢掉
         if (isCloseAllIng) {
             return;

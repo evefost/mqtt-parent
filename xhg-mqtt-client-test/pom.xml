@@ -39,7 +39,7 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-log4j2</artifactId>
     </dependency>
-  <!--  <dependency>
+    <dependency>
       <groupId>org.springframework.cloud</groupId>
       <artifactId>spring-cloud-starter-eureka</artifactId>
       <exclusions>
@@ -49,7 +49,6 @@
         </exclusion>
       </exclusions>
     </dependency>
--->
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -97,6 +96,22 @@
       <artifactId>fastjson</artifactId>
       <version>1.2.7</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-spring-legacy</artifactId>
+      <version>1.0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+      <version>1.0.6</version>
+    </dependency>
+
   </dependencies>
   <!--<repositories>-->
   <!--<repository>-->
@@ -106,4 +121,15 @@
   <!--<layout>default</layout>-->
   <!--</repository>-->
   <!--</repositories>-->
+
+  <build>
+
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+
+  </build>
 </project>

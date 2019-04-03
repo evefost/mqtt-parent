@@ -68,6 +68,7 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
         MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         m_collector.sumReadMessages(metrics.messagesRead());
         m_collector.sumWroteMessages(metrics.messagesWrote());
+        mqttListener.close();
         super.close(ctx, promise);
     }
 

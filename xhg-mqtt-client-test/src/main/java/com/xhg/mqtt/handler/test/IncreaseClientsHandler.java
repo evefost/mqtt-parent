@@ -1,20 +1,21 @@
 package com.xhg.mqtt.handler.test;
 
-import com.alibaba.fastjson.JSON;
+import static com.xhg.mqtt.netty.MessageClientFactory.getAndCreateChannel;
+
 import com.xhg.mqtt.common.SystemCmd;
-import com.xhg.mqtt.common.bo.IncreaseClient;
-import com.xhg.mqtt.handler.AbstractHandler;
+import com.xhg.mqtt.common.bo.ChangeClientNumber;
+import com.xhg.mqtt.handler.AbstractMqttPublishHandler;
 import com.xhg.mqtt.netty.MqttNettyClient;
-import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import org.springframework.stereotype.Component;
 
-import static com.xhg.mqtt.netty.MessageClientFactory.getAndCreateChannel;
-
+/**
+ * @author xie
+ */
 @Component
-public class IncreaseClientsHandler extends AbstractHandler {
+public class IncreaseClientsHandler extends AbstractMqttPublishHandler {
 
     private volatile static boolean createClientsIng;
 
@@ -35,18 +36,15 @@ public class IncreaseClientsHandler extends AbstractHandler {
     @Override
     protected <T extends MqttMessage> void doProcess(T message) {
         MqttPublishMessage mqttMessage = (MqttPublishMessage) message;
-        ByteBuf byteBuf = mqttMessage.payload();
-        byte[] payload = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(payload);
-        IncreaseClient increaseClient = JSON.parseObject(new String(payload), IncreaseClient.class);
-        logger.info("收到增客户端命令count:{}",increaseClient.getCount());
-        increaseClients(increaseClient.getCount());
+        ChangeClientNumber number = decodeContent(mqttMessage,ChangeClientNumber.class);
+        logger.info("收到增客户端命令count:{}",number.getCount());
+        increaseClients(number.getCount());
     }
 
 
     private  void increaseClients(int count) {
         //创建中，所有请求都丢掉
-        if (createClientsIng) {
+        if (createClientsIng||count==0) {
             return;
         }
         createClientsIng = true;

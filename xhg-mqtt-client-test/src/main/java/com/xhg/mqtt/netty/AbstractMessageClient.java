@@ -146,7 +146,6 @@ public abstract class AbstractMessageClient implements MessageClient {
         }
         if (options.isAutoReconnect()) {
             if (!channel.isActive() && reconnectTimes < maxReconnectTimes) {
-                reconnectTimes++;
                 reconnect(false);
             }
         }
@@ -157,12 +156,14 @@ public abstract class AbstractMessageClient implements MessageClient {
     public void reconnect(boolean immediately) {
         if(!immediately){
             try {
+                reconnectTimes++;
                 int step = (int) Math.pow(10,reconnectTimes);
                 TimeUnit.MILLISECONDS.sleep(random.nextInt(step));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+
         logger.info("[{}]重连=====>>>>", clientId);
         ClientOptions.Node node = options.getSelectNode();
         try {
@@ -174,6 +175,10 @@ public abstract class AbstractMessageClient implements MessageClient {
             logger.error("[{}]重连异常:", clientId, e);
             onClosed(null);
         }
+    }
+
+    protected boolean connected(){
+       return channel.isActive();
     }
 
 
@@ -193,7 +198,12 @@ public abstract class AbstractMessageClient implements MessageClient {
             logger.debug("ping channels:[{}]", nettyChannels.size());
             nettyChannels.forEach((c) -> {
                 AbstractMessageClient messageClient = (AbstractMessageClient) c;
-                messageClient.ping();
+                if(messageClient.connected()){
+                    messageClient.ping();
+                }else if(reconnectTimes<maxReconnectTimes){
+                    reconnect(true);
+                }
+
             });
         }
     }

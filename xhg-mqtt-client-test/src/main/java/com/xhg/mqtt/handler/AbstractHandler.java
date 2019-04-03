@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author xie
  */
-public abstract class AbstractHandler implements Handler<MqttMessage> {
+public abstract class AbstractHandler<M> implements Handler<MqttMessage> {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractHandler.class);
 
@@ -57,6 +57,8 @@ public abstract class AbstractHandler implements Handler<MqttMessage> {
             hook.beforeProcess(message);
         }
     }
+
+    public abstract  <O> O decodeContent(M message,Class<O> outputClass);
 
 
 }
