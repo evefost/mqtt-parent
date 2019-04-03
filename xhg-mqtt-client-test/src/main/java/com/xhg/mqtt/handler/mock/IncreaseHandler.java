@@ -1,16 +1,17 @@
 package com.xhg.mqtt.handler.mock;
 
-import static com.xhg.mqtt.netty.MessageClientFactory.getAndCreateChannel;
 
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.IncreaseCmd;
+import com.xhg.mqtt.netty.MessageClientFactory;
 import com.xhg.mqtt.netty.MqttNettyClient;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
+import org.springframework.stereotype.Component;
+
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import org.springframework.stereotype.Component;
 
 /**
  * 增加客户端连接
@@ -100,7 +101,7 @@ public class IncreaseHandler extends AbstactMockHandler {
         }
         for (int i = 0; i < count; i++) {
             try {
-                getAndCreateChannel(MqttNettyClient.class, false);
+                MessageClientFactory.getAndCreateClient(MqttNettyClient.class, false);
             } catch (Exception e) {
                 logger.error("创建连接异常", e);
             }

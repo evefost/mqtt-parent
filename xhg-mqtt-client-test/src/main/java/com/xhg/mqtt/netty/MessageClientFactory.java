@@ -16,21 +16,21 @@
 
 package com.xhg.mqtt.netty;
 
-import static com.xhg.mqtt.common.Constants.SYSTEM_CONTROL_PATTERN;
-
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.util.ServerUtils;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.xhg.mqtt.common.Constants.SYSTEM_CONTROL_PATTERN;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use the encoder/decoder
@@ -63,14 +63,14 @@ public class MessageClientFactory {
     /**
      * @param isMainClient 主客户端与其它客户端添加的题题不太一样
      */
-    public static <M extends MessageClient> M getAndCreateChannel(Class<M> clientClass, boolean isMainClient) {
-        return getAndCreateChannel(clientClass, null, isMainClient);
+    public static <M extends MessageClient> M getAndCreateClient(Class<M> clientClass, boolean isMainClient) {
+        return getAndCreateClient(clientClass, null, isMainClient);
     }
 
     /**
      * @param isMainClient isMainClient 主客户端与其它客户端添加的题题不太一样
      */
-    public static synchronized  <M extends MessageClient> M  getAndCreateChannel(Class<M> clientClass, List<String> speciallyTopics,
+    public static synchronized  <M extends MessageClient> M  getAndCreateClient(Class<M> clientClass, List<String> speciallyTopics,
         boolean isMainClient) {
         if (commonOptions == null) {
             throw new RuntimeException("设置客户端配置");
@@ -88,23 +88,23 @@ public class MessageClientFactory {
             options.getTopics().addAll(speciallyTopics);
         }
         addSystemTopics(options, isMainClient);
-        Channel channel = null;
-        try {
-            channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        Channel channel = null;
+//        try {
+//            channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
         M instance = null;
         try {
             Constructor<? extends MessageClient> constructor = clientClass
-                .getDeclaredConstructor(Bootstrap.class, ClientOptions.class, String.class, Channel.class);
+                .getDeclaredConstructor(Bootstrap.class, ClientOptions.class, String.class);
             constructor.setAccessible(true);
-            instance = (M) constructor.newInstance(bootstrap, options, clientId, channel);
+            instance = (M) constructor.newInstance(bootstrap, options, clientId);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(instance);
-        instance.connect();
+//        channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(instance);
+//        instance.connect();
         clients.add(instance);
         return instance;
     }

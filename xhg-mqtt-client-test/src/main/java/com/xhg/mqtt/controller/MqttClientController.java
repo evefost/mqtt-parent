@@ -1,7 +1,5 @@
 package com.xhg.mqtt.controller;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.google.protobuf.ByteString;
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.common.EventCodeEnum;
@@ -10,15 +8,20 @@ import com.xhg.mqtt.common.proto.BoxInfoPb.BoxStatus;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttHead;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage.Builder;
-import com.xhg.mqtt.netty.ClientOptions;
-import com.xhg.mqtt.netty.MessageClient;
-import com.xhg.mqtt.netty.MessageClientFactory;
-import com.xhg.mqtt.netty.MqttNettyClient;
-import com.xhg.mqtt.netty.SingletonClient;
+import com.xhg.mqtt.netty.*;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +32,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.SmartInitializingSingleton;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Created by xieyang on 19/3/30.
@@ -67,7 +64,7 @@ public class MqttClientController implements SmartInitializingSingleton {
     String createNettyClient(int count) throws InterruptedException {
         for (int i = 0; i < count; i++) {
             try {
-                MessageClientFactory.getAndCreateChannel(MqttNettyClient.class,false);
+                MessageClientFactory.getAndCreateClient(MqttNettyClient.class,false);
             } catch (Exception e) {
                 logger.error("连接通道失败", e);
 

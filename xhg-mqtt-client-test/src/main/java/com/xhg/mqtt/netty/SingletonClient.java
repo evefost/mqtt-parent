@@ -16,13 +16,13 @@
 
 package com.xhg.mqtt.netty;
 
-import static com.xhg.mqtt.common.SystemCmd.TEST_INCREASE_CLIENT;
-
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.xhg.mqtt.common.SystemCmd.TEST_INCREASE_CLIENT;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use
@@ -33,11 +33,11 @@ public class SingletonClient extends AbstractMessageClient {
     private static SingletonClient instance;
 
      private SingletonClient() {
-        this(null, null, null, null);
+        this(null, null, null);
     }
 
-     private SingletonClient(Bootstrap bootstrap, ClientOptions options, String clientId, Channel channel) {
-        super(bootstrap, options, clientId, channel);
+     private SingletonClient(Bootstrap bootstrap, ClientOptions options, String clientId) {
+        super(bootstrap, options, clientId);
 
     }
 
@@ -55,7 +55,7 @@ public class SingletonClient extends AbstractMessageClient {
     private static SingletonClient createInstance(){
         List<String> speciallyTopics = new ArrayList<>(1);
         speciallyTopics.add(TEST_INCREASE_CLIENT.getTopic());
-        SingletonClient singletonClient = MessageClientFactory.getAndCreateChannel(SingletonClient.class, speciallyTopics,true);
+        SingletonClient singletonClient = MessageClientFactory.getAndCreateClient(SingletonClient.class, speciallyTopics,true);
         return singletonClient;
     }
 

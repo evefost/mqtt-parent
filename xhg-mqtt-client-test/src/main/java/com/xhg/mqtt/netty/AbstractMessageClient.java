@@ -16,29 +16,20 @@
 
 package com.xhg.mqtt.netty;
 
-import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
-
 import com.sun.javafx.UnmodifiableArrayList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.mqtt.MqttConnectMessage;
-import io.netty.handler.codec.mqtt.MqttConnectPayload;
-import io.netty.handler.codec.mqtt.MqttConnectVariableHeader;
-import io.netty.handler.codec.mqtt.MqttFixedHeader;
-import io.netty.handler.codec.mqtt.MqttMessage;
-import io.netty.handler.codec.mqtt.MqttMessageBuilders;
-import io.netty.handler.codec.mqtt.MqttMessageType;
-import io.netty.handler.codec.mqtt.MqttPublishMessage;
-import io.netty.handler.codec.mqtt.MqttQoS;
-import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
-import io.netty.handler.codec.mqtt.MqttVersion;
+import io.netty.handler.codec.mqtt.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
 
 /**
@@ -56,7 +47,7 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     protected String clientId;
 
-    protected Channel channel;
+    protected volatile Channel channel;
 
 
     protected Bootstrap bootstrap;
@@ -70,27 +61,30 @@ public abstract class AbstractMessageClient implements MessageClient {
     private final static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
 
-
     private volatile static boolean pingTaskStart;
 
 
-    public AbstractMessageClient(Bootstrap bootstrap, ClientOptions options, String clientId, Channel channel) {
+    public AbstractMessageClient(Bootstrap bootstrap, ClientOptions options, String clientId) {
         this.bootstrap = bootstrap;
         this.clientId = clientId;
-        this.channel = channel;
         this.options = options;
-        startPingTask(options.getKeepAlive());
+        init();
     }
 
 
     @Override
     public void connect() {
-        logger.info("clientId[{}] 发送连接消息:", clientId);
+        if (channel == null) {
+            reconnect(false);
+            return;
+        }
+
+        logger.info("clientId[{}] 发送连接请求:", clientId);
         MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE,
                 false, 0);
         MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
                 MqttVersion.MQTT_3_1.protocolName(), MqttVersion.MQTT_3_1.protocolLevel(), false, false, false, 1, false,
-                true, options.getKeepAlive()+30);
+                true, options.getKeepAlive() + 30);
         MqttConnectPayload mqttConnectPayload = new MqttConnectPayload(clientId, null, null,
                 null, (byte[]) null);
         MqttConnectMessage message = new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
@@ -98,6 +92,14 @@ public abstract class AbstractMessageClient implements MessageClient {
     }
 
 
+    private void createChannel() {
+        try {
+            channel = bootstrap.connect(options.getSelectNode().getHost(), options.getSelectNode().getPort()).sync().channel();
+            connect();
+        } catch (Throwable throwable) {
+            logger.error("connect mqtt server[{}:{}]  failure ",options.getSelectNode().getHost(),options.getSelectNode().getPort(),throwable);
+        }
+    }
 
 
     @Override
@@ -133,12 +135,11 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     @Override
     public void send(MqttPublishMessage mqttMessage) {
-        if(logger.isDebugEnabled()){
-            logger.debug("[{}]发送消息[{}}",clientId,mqttMessage.variableHeader().topicName());
+        if (logger.isDebugEnabled()) {
+            logger.debug("[{}]发送消息[{}}", clientId, mqttMessage.variableHeader().topicName());
         }
         channel.writeAndFlush(mqttMessage);
     }
-
 
 
     @Override
@@ -149,7 +150,7 @@ public abstract class AbstractMessageClient implements MessageClient {
             logger.warn("[{}]连接关闭", clientId);
         }
         if (options.isAutoReconnect()) {
-            if (!channel.isActive() && reconnectTimes < maxReconnectTimes) {
+            if (channel != null && !channel.isActive() && reconnectTimes < maxReconnectTimes) {
                 reconnect(false);
             }
         }
@@ -158,40 +159,47 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     @Override
     public void reconnect(boolean immediately) {
-        if(!immediately){
+        if (!immediately) {
             try {
                 reconnectTimes++;
-                int step = (int) Math.pow(5,reconnectTimes);
+                int step = (int) Math.pow(5, reconnectTimes);
                 TimeUnit.MILLISECONDS.sleep(random.nextInt(step));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-
-        logger.info("[{}]重连=====>>>>", clientId);
         ClientOptions.Node node = options.getSelectNode();
+        logger.info("[{}] 重连接>>[{}:{}]", clientId,node.getHost(),node.getPort());
         try {
             channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
             channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(AbstractMessageClient.this);
             connect();
             reconnectTimes = 0;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.error("[{}]重连异常:", clientId, e);
-            onClosed(null);
+            onClosed(e);
         }
     }
 
-    protected boolean connected(){
-       return channel.isActive();
+    protected boolean connected() {
+        if(channel == null){
+            return false;
+        }
+        return channel.isActive();
     }
 
 
-    protected synchronized void startPingTask(int keepAlive) {
+    protected synchronized void init() {
+        try {
+            connect();
+        }catch (Throwable ex){
+            logger.error("初始化连接服务失败");
+        }
         if (pingTaskStart) {
             return;
         }
         pingTaskStart = true;
-        executorService.scheduleAtFixedRate(new PingTask(), 0, keepAlive, TimeUnit.SECONDS);
+        executorService.scheduleAtFixedRate(new PingTask(), 0, options.getKeepAlive(), TimeUnit.SECONDS);
     }
 
     public class PingTask implements Runnable {
@@ -202,9 +210,14 @@ public abstract class AbstractMessageClient implements MessageClient {
             logger.debug("ping channels:[{}]", nettyChannels.size());
             nettyChannels.forEach((c) -> {
                 AbstractMessageClient messageClient = (AbstractMessageClient) c;
-                if(messageClient.connected()){
-                    messageClient.ping();
-                }else {
+
+                if (messageClient.connected()) {
+                    try {
+                        messageClient.ping();
+                    }catch (Throwable ex){
+                        logger.debug("ping failure ", ex);
+                    }
+                } else {
                     reconnect(true);
                 }
 
@@ -219,7 +232,7 @@ public abstract class AbstractMessageClient implements MessageClient {
 
     @Override
     public void disconnect() {
-        if(channel.isActive()){
+        if (channel.isActive()) {
             channel.close();
         }
     }
