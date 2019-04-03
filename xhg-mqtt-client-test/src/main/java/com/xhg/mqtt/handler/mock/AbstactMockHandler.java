@@ -1,6 +1,6 @@
-package com.xhg.mqtt.handler.test;
+package com.xhg.mqtt.handler.mock;
 
-import com.xhg.mqtt.common.bo.MockCmd;
+import com.xhg.mqtt.common.cmd.MockCmd;
 import com.xhg.mqtt.handler.AbstractMqttPublishHandler;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -1,4 +1,4 @@
-package com.xhg.mqtt.common.bo;
+package com.xhg.mqtt.common.cmd;
 
 import com.alibaba.fastjson.JSON;
 

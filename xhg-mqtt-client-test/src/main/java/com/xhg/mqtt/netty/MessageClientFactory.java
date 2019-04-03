@@ -175,26 +175,9 @@ public class MessageClientFactory {
     }
 
     /**
-     * 重置客户端会自动重连
+     * 重置客户端，断开的连接将被收回，不会自动连
      */
-    public static void reset(int count) {
-
-        int disconnectCount = count <= 0 ? clients.size() : count;
-        logger.info("正在重置客户端连接[{}]", disconnectCount);
-        for (MessageClient client : clients) {
-            if (disconnectCount < 1) {
-                break;
-            } else if (!(client instanceof SingletonClient)) {
-                client.disconnect();
-                disconnectCount--;
-            }
-        }
-    }
-
-    /**
-     * disconnect 将不自动重连
-     */
-    public synchronized static void disconnect(int count) {
+    public synchronized static void reset(int count) {
         int disconnectCount = count <= 0 ? clients.size() : count;
         logger.info("正在断开客户端连接数[{}]", disconnectCount);
         List<MessageClient> aliveClients = new ArrayList<>();
@@ -210,6 +193,22 @@ public class MessageClientFactory {
         clients.clear();
         clients.addAll(aliveClients);
         clientCount.set(clients.size()+1);
+    }
+
+    /**
+     * disconnect 断开的连接不收回，将自动重连
+     */
+    public  static void disconnect(int count) {
+        int disconnectCount = count <= 0 ? clients.size() : count;
+        logger.info("正在重置客户端连接[{}]", disconnectCount);
+        for (MessageClient client : clients) {
+            if (disconnectCount < 1) {
+                break;
+            } else if (!(client instanceof SingletonClient)) {
+                client.disconnect();
+                disconnectCount--;
+            }
+        }
     }
 }
 

@@ -1,20 +1,20 @@
-package com.xhg.mqtt.common.bo;
+package com.xhg.mqtt.common.cmd;
 
 import com.alibaba.fastjson.JSON;
 
 /**
- * 增加客户端数量策略
+ * 重置
  * @author xie
  */
-public class IncreaseCmd extends MockCmd {
+public class ResetCmd extends MockCmd {
 
     /**
-     * 启停(2匀速增加,3随机增加 用到该值)
+     * 启停(2匀速重置,3随机重置 用到该值)
      */
     private  volatile boolean start;
 
     /**
-     * 模拟方式(1指定增加数,2匀速增加,3随机增加)
+     * 模拟方式(1指定重置数,2匀速重置,3连续随机机重置)
      */
     private volatile int type;
 
@@ -39,7 +39,7 @@ public class IncreaseCmd extends MockCmd {
 
     @Override
     public String getDescription() {
-        return "模拟增加客户端";
+        return "模拟重置客户端";
     }
 
     public void setType(int type) {

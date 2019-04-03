@@ -1,10 +1,10 @@
-package com.xhg.mqtt.handler.test;
+package com.xhg.mqtt.handler.mock;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.common.SystemCmd;
-import com.xhg.mqtt.common.bo.MockMsgCmd;
+import com.xhg.mqtt.common.cmd.MockMsgCmd;
 import com.xhg.mqtt.netty.MessageClient;
 import com.xhg.mqtt.netty.MessageClientFactory;
 import io.netty.buffer.Unpooled;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  * @author xie
  */
 @Component
-public class MockMsgHandler extends AbstactMockHandler {
+public class SendMsgHandler extends AbstactMockHandler {
 
     private volatile AtomicInteger loopTimes = new AtomicInteger(0);
 

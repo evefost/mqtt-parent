@@ -4,9 +4,10 @@ package com.xhg.mqtt.controller;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.xhg.mqtt.common.SystemCmd;
-import com.xhg.mqtt.common.bo.ChangeClientNumber;
-import com.xhg.mqtt.common.bo.IncreaseCmd;
-import com.xhg.mqtt.common.bo.MockMsgCmd;
+import com.xhg.mqtt.common.cmd.DisconnectCmd;
+import com.xhg.mqtt.common.cmd.IncreaseCmd;
+import com.xhg.mqtt.common.cmd.MockMsgCmd;
+import com.xhg.mqtt.common.cmd.ResetCmd;
 import com.xhg.mqtt.mq.SessionManager;
 import io.moquette.broker.Session;
 import io.moquette.broker.SessionRegistry;
@@ -72,38 +73,33 @@ public class TestController {
     }
 
     /**
-     * 通知客户端，重置所有连接(重置客户端会自动重连)
+     * 通知客户端，重置所有或指定连接数(重置客户端不会自动重连)
      * @return
      */
     @GetMapping("/reset/clients")
-    boolean resetClients(int count) {
-        ChangeClientNumber change = new ChangeClientNumber();
-        change.setCount(count);
-        change.setDescription("客户端重置所有连接");
+    boolean resetClients(ResetCmd cmd) {
+
         MqttPublishMessage publish = MqttMessageBuilders.publish()
             .topicName(SystemCmd.TEST_RESET_CLIENT.getTopic())
             .retained(false)
             .qos(MqttQoS.AT_MOST_ONCE)
-            .payload(Unpooled.copiedBuffer(change.toString().getBytes(UTF_8))).build();
+            .payload(Unpooled.copiedBuffer(cmd.toString().getBytes(UTF_8))).build();
         sessionManager.publish(publish);
         return true;
     }
 
 
     /**
-     * 通知客户端，主动关闭部分或全部客户端(将不自动重连)
+     * 通知客户端，主动关闭部分或全部客户端(将自动重连)
      * @return
      */
     @GetMapping("/disconnect/clients")
-    boolean disconnect(int count) {
-        ChangeClientNumber change = new ChangeClientNumber();
-        change.setCount(count);
-        change.setDescription("主动关闭部分或全部客户端");
+    boolean disconnect(DisconnectCmd cmd) {
         MqttPublishMessage publish = MqttMessageBuilders.publish()
             .topicName(SystemCmd.TEST_DISCONNECT_CLIENT.getTopic())
             .retained(false)
             .qos(MqttQoS.AT_MOST_ONCE)
-            .payload(Unpooled.copiedBuffer(change.toString().getBytes(UTF_8))).build();
+            .payload(Unpooled.copiedBuffer(cmd.toString().getBytes(UTF_8))).build();
         sessionManager.publish(publish);
         return true;
 

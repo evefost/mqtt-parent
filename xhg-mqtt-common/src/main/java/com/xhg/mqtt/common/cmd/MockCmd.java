@@ -1,4 +1,4 @@
-package com.xhg.mqtt.common.bo;
+package com.xhg.mqtt.common.cmd;
 
 /**
  * 增加客户端数理策略
