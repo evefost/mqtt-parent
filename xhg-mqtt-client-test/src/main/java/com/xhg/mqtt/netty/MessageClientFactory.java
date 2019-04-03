@@ -70,7 +70,7 @@ public class MessageClientFactory {
     /**
      * @param isMainClient isMainClient 主客户端与其它客户端添加的题题不太一样
      */
-    public static <M extends MessageClient> M getAndCreateChannel(Class<M> clientClass, List<String> speciallyTopics,
+    public static synchronized  <M extends MessageClient> M  getAndCreateChannel(Class<M> clientClass, List<String> speciallyTopics,
         boolean isMainClient) {
         if (commonOptions == null) {
             throw new RuntimeException("设置客户端配置");
