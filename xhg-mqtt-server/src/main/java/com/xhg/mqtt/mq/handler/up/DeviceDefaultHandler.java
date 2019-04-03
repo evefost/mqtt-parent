@@ -2,6 +2,7 @@ package com.xhg.mqtt.mq.handler.up;
 
 
 import com.xhg.mqtt.mq.client.MessageClient;
+import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 
 public class DeviceDefaultHandler extends AbstractUpHandler{
@@ -17,7 +18,7 @@ public class DeviceDefaultHandler extends AbstractUpHandler{
 
 
     @Override
-    protected void doProcess(MqttWrapperMessage message) {
+    protected <TM extends Message> void doProcess(TM message) {
         logger.debug("设备消息默认处理");
         message.setTopic("xhg-order-device");
 

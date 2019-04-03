@@ -25,9 +25,9 @@ public class DeviceConnectHandler extends AbstractUpHandler {
 
 
     @Override
-    protected void doProcess(MqttWrapperMessage message) {
+    protected <TM extends Message> void doProcess(TM message) {
 
-        MqttMessage mqMessage = message.getSrcMessage();
+        MqttMessage mqMessage = (MqttMessage) message.getSrcMessage();
         String clientId = ((MqttConnectPayload) mqMessage.payload()).clientIdentifier();
         if (logger.isDebugEnabled()) {
             logger.debug("监听到设备连接deviceId[{}]", clientId);

@@ -34,14 +34,6 @@ public class HandlerManager implements SmartInitializingSingleton, ApplicationCo
 
     private ApplicationContext applicationContext;
 
-    public static <H extends AbstractHandler> H getHandler(Class<H> clazz) {
-        for (AbstractHandler handler : handlers) {
-            if (handler instanceof DeviceConnectHandler) {
-                return (H) handler;
-            }
-        }
-        return null;
-    }
 
     public final static void process(Message message) {
         boolean matchHandler = false;

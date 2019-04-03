@@ -29,7 +29,7 @@ public class MqttFailedListener implements MessageFailedListener,InitializingBea
 
     @Override
     public void onFailed(Throwable e, Message message) {
-        if(message.getTo().equals(POINT.CLIEN)){
+        if(message.getTo().equals(POINT.CLIENT)){
             failedCounter.increment();
         }
     }

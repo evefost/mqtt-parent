@@ -10,8 +10,9 @@ import com.xhg.mqtt.common.POINT;
  */
 public interface Handler<M> {
 
-    boolean support(M message);
+    boolean support(Object message);
 
+    void processMessage(M message);
 
     POINT getPoint();
 

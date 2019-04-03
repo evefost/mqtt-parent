@@ -4,6 +4,7 @@ package com.xhg.mqtt.mq.handler.up;
 import static com.xhg.mqtt.common.EventCodeEnum.SITE_INFO;
 
 import com.xhg.mqtt.mq.client.MessageClient;
+import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 
 public class SiteInfoHandler extends AbstractUpHandler{
@@ -19,7 +20,7 @@ public class SiteInfoHandler extends AbstractUpHandler{
 
 
     @Override
-    protected void doProcess(MqttWrapperMessage message) {
+    protected <TM extends Message> void doProcess(TM message) {
         logger.debug("监听到设备上报站点信息");
         message.setTopic("xhg-order-device");
     }

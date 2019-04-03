@@ -1,6 +1,8 @@
 package com.xhg.mqtt.handler;
 
+import com.xhg.mqtt.common.POINT;
 import com.xhg.mqtt.common.ProcessHook;
+import com.xhg.mqtt.common.handler.Handler;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +58,11 @@ public abstract class AbstractHandler<M> implements Handler<MqttMessage> {
         for (ProcessHook hook : hooks) {
             hook.beforeProcess(message);
         }
+    }
+
+    @Override
+    public POINT getPoint() {
+        return POINT.CLIENT;
     }
 
     public abstract  <O> O decodeContent(M message,Class<O> outputClass);

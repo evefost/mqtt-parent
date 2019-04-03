@@ -2,6 +2,7 @@ package com.xhg.mqtt.mq;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.xhg.mqtt.common.POINT;
+import com.xhg.mqtt.common.handler.HandlerDispatcher;
 import com.xhg.mqtt.common.proto.MqttMessagePb;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttHead;
 import com.xhg.mqtt.mq.handler.up.DeviceConnectHandler;
@@ -44,7 +45,7 @@ public class PublisherListener extends AbstractInterceptHandler implements Decod
         logger.debug("收到[{}]连接消息", clientID);
         MqttWrapperMessage message = new MqttWrapperMessage();
         message.setSrcMessage(mqttMessage.getMsg());
-        message.setFrom(POINT.CLIEN);
+        message.setFrom(POINT.CLIENT);
         message.setTo(POINT.SERVER);
         message.setClientId(clientID);
         deviceConnectHandler.processMessage(message);
@@ -59,14 +60,14 @@ public class PublisherListener extends AbstractInterceptHandler implements Decod
         message.setClientId(clientID);
         message.setSrcMessage(mqttMessage.getMsg());
         message.setTopic(topicName);
-        message.setFrom(POINT.CLIEN);
+        message.setFrom(POINT.CLIENT);
         message.setTo(POINT.SERVER);
         ByteBuf byteBuf = mqttMessage.getPayload();
         byte[] payload = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(payload);
         message.setMqttPayload(payload);
        // decode(message);
-        //HandlerManager.process(message);
+        //HandlerDispatcher.process(message);
     }
 
     @Override

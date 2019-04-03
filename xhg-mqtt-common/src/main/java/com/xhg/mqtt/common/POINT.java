@@ -8,10 +8,10 @@ public enum POINT {
     /**
      * 客户端
      */
-    CLIEN,
+    CLIENT,
 
     /**
      * 表示内部端(服务端)
      */
-    SERVER;
+    SERVER
 }

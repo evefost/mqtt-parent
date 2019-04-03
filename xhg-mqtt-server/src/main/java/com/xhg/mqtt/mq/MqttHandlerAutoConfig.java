@@ -1,6 +1,8 @@
 package com.xhg.mqtt.mq;
 
 
+import com.xhg.mqtt.common.handler.Handler;
+import com.xhg.mqtt.common.handler.HandlerDispatcher;
 import com.xhg.mqtt.mq.client.AbstractMessageClient;
 import com.xhg.mqtt.mq.client.MessageClient;
 import com.xhg.mqtt.mq.handler.down.BroadcastMessage2DeviceHandler;
@@ -21,20 +23,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MqttClientAutoConfig implements SmartInitializingSingleton {
+public class MqttHandlerAutoConfig implements SmartInitializingSingleton {
 
 
     @Autowired
     private List<MessageFailedListener> failedListeners;
 
-    @Override
-    public void afterSingletonsInstantiated() {
-        //注册消息监听器
-        for (MessageFailedListener listener : failedListeners) {
-            AbstractMessageClient.registerFailedListner(listener);
-        }
-
-    }
+    @Autowired
+    private List<Handler> handlers;
 
 
 
@@ -83,6 +79,17 @@ public class MqttClientAutoConfig implements SmartInitializingSingleton {
     @Bean
     MultiMessage2DeviceHandler multiMessage2DeviceHandler(@Qualifier(value = "mqttClient") MessageClient client) {
         return new MultiMessage2DeviceHandler(client);
+    }
+
+
+    @Override
+    public void afterSingletonsInstantiated() {
+        //注册消息监听器
+        for (MessageFailedListener listener : failedListeners) {
+            AbstractMessageClient.registerFailedListner(listener);
+        }
+        HandlerDispatcher.addAllHandler(handlers);
+
     }
 
 

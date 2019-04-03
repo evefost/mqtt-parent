@@ -1,10 +1,11 @@
 package com.xhg.mqtt.config;
 
 
-import com.xhg.mqtt.handler.Handler;
-import com.xhg.mqtt.handler.HandlerDispatcher;
+import com.xhg.mqtt.common.handler.Handler;
 import java.util.Map;
 import java.util.function.BiConsumer;
+
+import com.xhg.mqtt.common.handler.HandlerDispatcher;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.ApplicationContext;

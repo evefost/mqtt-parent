@@ -8,8 +8,12 @@ import com.google.protobuf.AbstractMessage;
 import com.xhg.mqtt.common.POINT;
 import com.xhg.mqtt.mq.client.MessageClient;
 import com.xhg.mqtt.mq.handler.AbstractHandler;
+import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.RocketWrapperMessage;
 
+/**
+ * @author xieyang
+ */
 public class ServiceNotifyHandler extends AbstractHandler<RocketWrapperMessage> {
 
 
@@ -18,7 +22,7 @@ public class ServiceNotifyHandler extends AbstractHandler<RocketWrapperMessage> 
     }
 
     @Override
-    protected void doAck(RocketWrapperMessage message) {
+    protected void doAck(Message message) {
 
     }
 
@@ -34,7 +38,7 @@ public class ServiceNotifyHandler extends AbstractHandler<RocketWrapperMessage> 
 
 
     @Override
-    public void doProcess(RocketWrapperMessage message) {
+    protected <TM extends Message> void doProcess(TM message) {
         logger.debug("处理下发广播信息");
         client.publish(message);
     }

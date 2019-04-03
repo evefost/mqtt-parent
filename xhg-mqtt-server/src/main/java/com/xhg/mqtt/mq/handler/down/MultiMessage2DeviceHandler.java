@@ -21,19 +21,24 @@ public class MultiMessage2DeviceHandler extends ServiceNotifyHandler {
     }
 
     @Override
-    public boolean support(Message message) {
+    public boolean support(Object message) {
         if (!super.support(message)) {
             return false;
         }
-        RocketMqMessage srcMessage = (RocketMqMessage) message.getSrcMessage();
-        ReceiveRange receiveRange = srcMessage.getReceiveRange();
-        if(receiveRange == null){
-            return false;
+        if(message instanceof Message){
+            Message msg = (Message) message;
+            RocketMqMessage srcMessage = (RocketMqMessage) msg.getSrcMessage();
+            ReceiveRange receiveRange = srcMessage.getReceiveRange();
+            if(receiveRange == null){
+                return false;
+            }
+            List<String> devices = receiveRange.getDevices();
+            if (devices != null && !devices.isEmpty()) {
+                return true;
+            }
+
         }
-        List<String> devices = receiveRange.getDevices();
-        if (devices != null && !devices.isEmpty()) {
-            return true;
-        }
+
         return false;
     }
 
@@ -41,8 +46,9 @@ public class MultiMessage2DeviceHandler extends ServiceNotifyHandler {
 
 
     @Override
-    public void doProcess(RocketWrapperMessage message) {
-        List<String> topics = convert2MqttTopic(message);
+    protected <TM extends Message> void doProcess(TM message) {
+        RocketWrapperMessage msg = (RocketWrapperMessage) message;
+        List<String> topics = convert2MqttTopic(msg);
         if(logger.isDebugEnabled()){
             logger.debug("处理下发多个设备信息:{}",topics);
         }

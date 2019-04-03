@@ -1,18 +1,17 @@
 package com.xhg.mqtt.mq.handler;
 
 import com.google.protobuf.AbstractMessage;
-import com.xhg.mqtt.common.POINT;
 import com.xhg.mqtt.common.ProcessHook;
 import com.xhg.mqtt.common.handler.Handler;
-import com.xhg.mqtt.common.proto.MqttMessagePb.MqttHead;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage;
 import com.xhg.mqtt.mq.client.MessageClient;
 import com.xhg.mqtt.mq.message.Message;
-import java.util.ArrayList;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 抽象模板勾子处理
@@ -34,17 +33,19 @@ public abstract class AbstractHandler<M extends Message> implements Handler<Mess
     }
 
     @Override
-    public boolean support(Message message) {
-        MqttHead head = message.getBuzMessage().getHead();
-        POINT from = message.getFrom();
-        if( getEventCode().equals(head.getEventCode())&& getPoint().equals(from)){
-            return true;
-        }
+    public boolean support(Object message) {
+
+//        MqttHead head = message.getBuzMessage().getHead();
+//        POINT from = message.getFrom();
+//        if( getEventCode().equals(head.getEventCode())&& getPoint().equals(from)){
+//            return true;
+//        }
         return false;
     }
 
 
-    public void processMessage(M message) {
+    @Override
+    public void processMessage(Message message) {
         doBefore(message);
         try {
             boolean ack = isAck(message);
@@ -66,7 +67,7 @@ public abstract class AbstractHandler<M extends Message> implements Handler<Mess
      * 如果是需要ack的消息，该方法将被执行
      * @param message
      */
-    protected void doAck(M message) {
+    protected void doAck(Message message) {
         if(logger.isDebugEnabled()){
             logger.debug(" ack 请求");
         }
@@ -77,14 +78,14 @@ public abstract class AbstractHandler<M extends Message> implements Handler<Mess
     /**
      * 处理相应逻辑，执行该方法时消息已被解码处理
      */
-    protected abstract void doProcess(M message);
+    protected abstract <TM extends Message>  void doProcess(TM message);
 
 
     /**
      *  处理ack消息，该方法被执行
      * @param message
      */
-    protected  void doProcessAck(M message){
+    protected  void doProcessAck(Message message){
         logger.debug("处理收到的ack消息");
         message.setTopic("xhg-order-ack");
 
@@ -100,14 +101,14 @@ public abstract class AbstractHandler<M extends Message> implements Handler<Mess
     }
 
 
-    private void doAfter(M message) {
+    private void doAfter(Message message) {
         for (ProcessHook hook : hooks) {
             hook.afterProcess(message);
         }
     }
 
 
-    protected void doBefore(M message) {
+    protected void doBefore(Message message) {
 
         for (ProcessHook hook : hooks) {
             hook.beforeProcess(message);

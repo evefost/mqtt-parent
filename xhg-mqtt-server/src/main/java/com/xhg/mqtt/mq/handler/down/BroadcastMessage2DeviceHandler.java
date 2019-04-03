@@ -22,9 +22,10 @@ public class BroadcastMessage2DeviceHandler extends ServiceNotifyHandler {
     }
 
     @Override
-    public boolean support(Message message) {
+    public boolean support(Object message) {
         if (super.support(message)) {
-            RocketMqMessage srcMessage = (RocketMqMessage) message.getSrcMessage();
+            Message msg = (Message) message;
+            RocketMqMessage srcMessage = (RocketMqMessage) msg.getSrcMessage();
             ReceiveRange receiveRange = srcMessage.getReceiveRange();
             if (receiveRange == null) {
                 return true;
@@ -39,9 +40,9 @@ public class BroadcastMessage2DeviceHandler extends ServiceNotifyHandler {
 
 
     @Override
-    public void doProcess(RocketWrapperMessage message) {
+    protected <TM extends Message> void doProcess(TM message) {
 
-        RocketMqMessage srcMessage = message.getSrcMessage();
+        RocketMqMessage srcMessage = (RocketMqMessage) message.getSrcMessage();
         ReceiveRange receiveRange = srcMessage.getReceiveRange();
         StringBuilder topic = new StringBuilder("/productKey/server");
         if (!StringUtils.isEmpty(receiveRange.getProvince())) {

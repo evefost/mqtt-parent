@@ -4,6 +4,7 @@ package com.xhg.mqtt.mq.handler.up;
 import static com.xhg.mqtt.common.EventCodeEnum.DEVICE_LOGIN;
 
 import com.xhg.mqtt.mq.client.MessageClient;
+import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 
 /**
@@ -23,7 +24,7 @@ public class DeviceLoginHandler  extends AbstractUpHandler {
 
 
     @Override
-    protected void doProcess(MqttWrapperMessage message) {
+    protected <TM extends Message> void doProcess(TM message) {
         if(logger.isDebugEnabled()){
             logger.debug("监听到设备上线deviceId[{}]", message.getBuzMessage().getHead().getDeviceId());
         }

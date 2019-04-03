@@ -24,7 +24,7 @@ import static io.netty.handler.codec.mqtt.MqttMessageType.PUBLISH;
 import static io.netty.handler.codec.mqtt.MqttMessageType.SUBACK;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 
-import com.xhg.mqtt.handler.HandlerDispatcher;
+import com.xhg.mqtt.common.handler.HandlerDispatcher;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

@@ -37,7 +37,7 @@ public class RocketMqMessageListener implements Decoder<RocketWrapperMessage> {
 		RocketWrapperMessage msg = new RocketWrapperMessage();
 		msg.setSrcMessage(message);
 		msg.setFrom(POINT.SERVER);
-		msg.setTo(POINT.CLIEN);
+		msg.setTo(POINT.CLIENT);
 		decode(msg);
 		HandlerManager.process(msg);
 	}

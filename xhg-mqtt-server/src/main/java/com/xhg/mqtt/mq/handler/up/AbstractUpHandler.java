@@ -35,7 +35,7 @@ public abstract class AbstractUpHandler extends AbstractHandler<MqttWrapperMessa
     }
 
     @Override
-    protected void doAck(MqttWrapperMessage message) {
+    protected void doAck(Message message) {
 
         MqttMessagePb.MqttMessage srcMsg = message.getBuzMessage();
         MqttHead srcHead = srcMsg.getHead();
@@ -59,7 +59,7 @@ public abstract class AbstractUpHandler extends AbstractHandler<MqttWrapperMessa
         replyMessage.setTopic(topic);
         replyMessage.setBuzMessage(replyMqtt);
         replyMessage.setFrom(POINT.SERVER);
-        replyMessage.setTo(POINT.CLIEN);
+        replyMessage.setTo(POINT.CLIENT);
         replyMessage.setMqttPayload(payload);
         MqttPublishMessage publish = MqttMessageBuilders.publish()
             .topicName(topic)
@@ -73,7 +73,7 @@ public abstract class AbstractUpHandler extends AbstractHandler<MqttWrapperMessa
 
     @Override
     public POINT getPoint() {
-        return POINT.CLIEN;
+        return POINT.CLIENT;
     }
 
 

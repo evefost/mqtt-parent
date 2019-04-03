@@ -8,6 +8,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.xhg.mqtt.common.proto.BoxInfoPb.BoxInfo;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage;
 import com.xhg.mqtt.mq.client.MessageClient;
+import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 
 
@@ -21,18 +22,21 @@ public class BoxInfoHandler extends AbstractUpHandler {
         super(client);
     }
 
+
+
+
     @Override
     public String getEventCode() {
         return BOX_INFO.getCode();
     }
 
-
-
     @Override
-    protected void doProcess(MqttWrapperMessage message) {
+    protected <TM extends Message> void doProcess(TM message) {
+
         logger.debug("监听到设备上报box信息");
         message.setTopic("xhg-order-device");
-        BoxInfo boxInfo = parseMessageBody(message);
+        MqttWrapperMessage msg = (MqttWrapperMessage) message;
+        BoxInfo boxInfo = parseMessageBody(msg);
         //logger.debug("消息内容{}",boxInfo);
         //client.publish(message);
     }
