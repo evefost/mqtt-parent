@@ -64,13 +64,13 @@ public class SendMsgHandler extends AbstactMockHandler {
         public void run() {
             while (!stop) {
                 switch (cmd.getType()) {
-                    case 1:
+                    case 0:
                         average();
                         break;
-                    case 2:
+                    case 1:
                         random();
                         break;
-                    case 3:
+                    case 2:
                         increase();
                         break;
                     default:

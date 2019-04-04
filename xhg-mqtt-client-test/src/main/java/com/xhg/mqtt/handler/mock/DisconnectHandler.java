@@ -1,16 +1,14 @@
 package com.xhg.mqtt.handler.mock;
 
-import com.xhg.mqtt.common.POINT;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.DisconnectCmd;
 import com.xhg.mqtt.netty.MessageClientFactory;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
-import org.springframework.stereotype.Component;
-
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import org.springframework.stereotype.Component;
 
 /**
  * 关闭客户端连接
@@ -54,14 +52,14 @@ public class DisconnectHandler extends AbstactMockHandler {
         public void run() {
             while (!stop) {
                 switch (cmd.getType()) {
-                    case 1:
+                    case 0:
                         MessageClientFactory.disconnect(cmd.getCount());
                         stop = true;
                         break;
-                    case 2:
+                    case 1:
                         average();
                         break;
-                    case 3:
+                    case 2:
                         random();
                         break;
                     default:

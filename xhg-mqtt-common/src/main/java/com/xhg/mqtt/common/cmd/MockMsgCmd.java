@@ -13,7 +13,7 @@ public class MockMsgCmd extends   MockCmd {
    private  volatile boolean start;
 
     /**
-     *模拟方式(1匀速发送,2周期内随机发送,3增速发送)
+     *模拟方式(0匀速发送,1周期内随机发送,2增速发送)
      */
    private volatile int type;
 

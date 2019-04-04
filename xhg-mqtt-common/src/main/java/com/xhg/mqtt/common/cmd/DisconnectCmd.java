@@ -9,17 +9,17 @@ import com.alibaba.fastjson.JSON;
 public class DisconnectCmd extends MockCmd {
 
     /**
-     * 启停(2匀速断开,3随机增加 用到该值)
+     * 启停(1匀速断开,2随机增加 用到该值)
      */
     private  volatile boolean start;
 
     /**
-     * 模拟方式(1指定断开数,2匀速断开,3连续随机机断开)
+     * 模拟方式(0指定断开数,1匀速断开,2连续随机机断开)
      */
     private volatile int type;
 
     /**
-     * 每次增加数(1指定数量，2匀速时作为步长，3随机是在该范围的随机)
+     * 每次增加数({@link #type}0指定数量，1匀速时作为步长，2随机是在该范围的随机)
      */
     private volatile int count;
 
