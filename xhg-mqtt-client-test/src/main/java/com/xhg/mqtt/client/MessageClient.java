@@ -1,4 +1,4 @@
-package com.xhg.mqtt.netty;
+package com.xhg.mqtt.client;
 
 /**
  * Created by xieyang on 19/3/31.

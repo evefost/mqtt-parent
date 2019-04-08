@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package com.xhg.mqtt.netty;
+package com.xhg.mqtt.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;

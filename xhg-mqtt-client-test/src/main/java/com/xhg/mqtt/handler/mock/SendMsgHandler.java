@@ -1,10 +1,10 @@
 package com.xhg.mqtt.handler.mock;
 
 import com.sun.javafx.UnmodifiableArrayList;
+import com.xhg.mqtt.client.MessageClient;
+import com.xhg.mqtt.client.MessageClientFactory;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.MockMsgCmd;
-import com.xhg.mqtt.netty.MessageClient;
-import com.xhg.mqtt.netty.MessageClientFactory;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;

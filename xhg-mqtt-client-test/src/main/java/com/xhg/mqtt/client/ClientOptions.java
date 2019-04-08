@@ -1,8 +1,9 @@
-package com.xhg.mqtt.netty;
+package com.xhg.mqtt.client;
+
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
 /**
  *

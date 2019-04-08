@@ -1,8 +1,8 @@
 package com.xhg.mqtt.handler.mock;
 
+import com.xhg.mqtt.client.MessageClientFactory;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.ResetCmd;
-import com.xhg.mqtt.netty.MessageClientFactory;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import org.springframework.stereotype.Component;
