@@ -8,21 +8,22 @@ import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage.Builder;
 import com.xhg.mqtt.mq.client.MessageClient;
 import com.xhg.mqtt.mq.client.XhgMqttClient;
-import com.xhg.mqtt.mq.handler.AbstractHandler;
+import com.xhg.mqtt.mq.handler.AbstractBuzHandler;
 import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Value;
+
+import javax.annotation.Resource;
 
 /**
  * 终端登录处理
  * @author xie
  */
-public abstract class AbstractUpHandler extends AbstractHandler<MqttWrapperMessage> {
+public abstract class AbstractUpHandler extends AbstractBuzHandler<MqttWrapperMessage> {
 
     @Resource(name = "mqttClient")
     private XhgMqttClient xhgMqttClient;

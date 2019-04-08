@@ -1,8 +1,10 @@
 package com.xhg.mqtt.mq.handler;
 
 import com.google.protobuf.AbstractMessage;
+import com.xhg.mqtt.common.POINT;
 import com.xhg.mqtt.common.ProcessHook;
 import com.xhg.mqtt.common.handler.Handler;
+import com.xhg.mqtt.common.proto.MqttMessagePb;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttMessage;
 import com.xhg.mqtt.mq.client.MessageClient;
 import com.xhg.mqtt.mq.message.Message;
@@ -18,7 +20,7 @@ import java.util.List;
  *
  * @author xie
  */
-public abstract class AbstractHandler<M extends Message> implements Handler<Message> {
+public abstract class AbstractBuzHandler<M extends Message> implements Handler<Message> {
 
     protected static final String ACK_FLAG="/ack";
 
@@ -28,18 +30,20 @@ public abstract class AbstractHandler<M extends Message> implements Handler<Mess
 
     protected MessageClient client;
 
-    public AbstractHandler(MessageClient client){
+    public AbstractBuzHandler(MessageClient client){
         this.client = client;
     }
 
     @Override
     public boolean support(Object message) {
-
-//        MqttHead head = message.getBuzMessage().getHead();
-//        POINT from = message.getFrom();
-//        if( getEventCode().equals(head.getEventCode())&& getPoint().equals(from)){
-//            return true;
-//        }
+        if(message instanceof  Message){
+            Message msg = (Message) message;
+            MqttMessagePb.MqttHead head = msg.getBuzMessage().getHead();
+            POINT from = msg.getFrom();
+            if( getEventCode().equals(head.getEventCode())&& getPoint().equals(from)){
+                return true;
+            }
+        }
         return false;
     }
 

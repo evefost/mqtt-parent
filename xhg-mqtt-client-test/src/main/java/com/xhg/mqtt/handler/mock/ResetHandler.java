@@ -3,12 +3,12 @@ package com.xhg.mqtt.handler.mock;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.ResetCmd;
 import com.xhg.mqtt.netty.MessageClientFactory;
-import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
+import org.springframework.stereotype.Component;
+
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import org.springframework.stereotype.Component;
 
 /**
  * 重置客户端连接
@@ -33,8 +33,10 @@ public class ResetHandler extends AbstactMockHandler {
     }
 
 
+
+
     @Override
-    protected <T extends MqttMessage> void doProcess(T message) {
+    protected <IM> void doProcess(IM message) {
         MqttPublishMessage mqttMessage = (MqttPublishMessage) message;
         cmd = decodeContent(mqttMessage, ResetCmd.class);
         handleCmd(cmd, new MockTask());

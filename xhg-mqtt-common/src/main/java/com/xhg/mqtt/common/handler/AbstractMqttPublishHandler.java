@@ -1,11 +1,14 @@
-package com.xhg.mqtt.handler;
+package com.xhg.mqtt.common.handler;
 
 import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 
-public abstract class AbstractMqttPublishHandler extends AbstractHandler<MqttPublishMessage>  {
+/**
+ * @author xieyang
+ */
+public abstract class AbstractMqttPublishHandler extends AbstractHandler<MqttPublishMessage> {
 
 
 
@@ -17,9 +20,5 @@ public abstract class AbstractMqttPublishHandler extends AbstractHandler<MqttPub
         O content = JSON.parseObject(new String(payload), outputClass);
         return content;
     }
-
-
-
-
 
 }

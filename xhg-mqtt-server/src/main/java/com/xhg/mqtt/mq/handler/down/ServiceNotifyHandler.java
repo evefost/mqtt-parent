@@ -1,20 +1,20 @@
 package com.xhg.mqtt.mq.handler.down;
 
 
-import static com.xhg.mqtt.common.EventCodeEnum.SERVER_NOTIFY;
-import static com.xhg.mqtt.common.POINT.SERVER;
-
 import com.google.protobuf.AbstractMessage;
 import com.xhg.mqtt.common.POINT;
 import com.xhg.mqtt.mq.client.MessageClient;
-import com.xhg.mqtt.mq.handler.AbstractHandler;
+import com.xhg.mqtt.mq.handler.AbstractBuzHandler;
 import com.xhg.mqtt.mq.message.Message;
 import com.xhg.mqtt.mq.message.RocketWrapperMessage;
+
+import static com.xhg.mqtt.common.EventCodeEnum.SERVER_NOTIFY;
+import static com.xhg.mqtt.common.POINT.SERVER;
 
 /**
  * @author xieyang
  */
-public class ServiceNotifyHandler extends AbstractHandler<RocketWrapperMessage> {
+public class ServiceNotifyHandler extends AbstractBuzHandler<RocketWrapperMessage> {
 
 
     public ServiceNotifyHandler(MessageClient client) {

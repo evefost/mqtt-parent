@@ -1,22 +1,22 @@
 package com.xhg.mqtt.handler.mock;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.MockMsgCmd;
 import com.xhg.mqtt.netty.MessageClient;
 import com.xhg.mqtt.netty.MessageClientFactory;
 import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import org.springframework.stereotype.Component;
+
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.springframework.stereotype.Component;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * 启动模拟客户端发送消息
@@ -45,15 +45,12 @@ public class SendMsgHandler extends AbstactMockHandler {
 
 
     @Override
-    protected <T extends MqttMessage> void doProcess(T message) {
+    protected <IM> void doProcess(IM message) {
         MqttPublishMessage mqttMessage = (MqttPublishMessage) message;
         cmd = decodeContent(mqttMessage, MockMsgCmd.class);
 
         handleCmd(cmd,new MockTask());
-
-
     }
-
 
 
     public class MockTask implements Runnable {

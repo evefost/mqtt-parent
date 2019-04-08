@@ -3,6 +3,7 @@ package com.xhg.mqtt.mq;
 import com.alibaba.fastjson.JSON;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.xhg.mqtt.common.POINT;
+import com.xhg.mqtt.common.handler.HandlerDispatcher;
 import com.xhg.mqtt.common.proto.MqttMessagePb;
 import com.xhg.mqtt.mq.message.RocketMqMessage;
 import com.xhg.mqtt.mq.message.RocketWrapperMessage;
@@ -39,7 +40,7 @@ public class RocketMqMessageListener implements Decoder<RocketWrapperMessage> {
 		msg.setFrom(POINT.SERVER);
 		msg.setTo(POINT.CLIENT);
 		decode(msg);
-		HandlerManager.process(msg);
+		HandlerDispatcher.process(msg);
 	}
 
 
