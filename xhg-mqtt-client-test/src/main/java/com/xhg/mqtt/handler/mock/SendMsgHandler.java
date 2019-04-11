@@ -49,7 +49,7 @@ public class SendMsgHandler extends AbstactSystemHandler {
         MqttPublishMessage mqttMessage = (MqttPublishMessage) message;
         cmd = decodeContent(mqttMessage, MockMsgCmd.class);
 
-        handleCmd(cmd,new MockTask());
+        handleCmd(cmd, new MockTask());
     }
 
 
@@ -59,21 +59,26 @@ public class SendMsgHandler extends AbstactSystemHandler {
 
         @Override
         public void run() {
-            while (!stop) {
-                switch (cmd.getType()) {
-                    case 0:
-                        average();
-                        break;
-                    case 1:
-                        random();
-                        break;
-                    case 2:
-                        increase();
-                        break;
-                    default:
+            try {
+                while (!stop) {
+                    switch (cmd.getType()) {
+                        case 0:
+                            average();
+                            break;
+                        case 1:
+                            random();
+                            break;
+                        case 2:
+                            increase();
+                            break;
+                        default:
+                    }
+                    doSendMsg();
                 }
-                doSendMsg();
+            } catch (Throwable ex) {
+                logger.warn("测试任务异常", ex);
             }
+            stop = true;
         }
 
         /**
@@ -81,7 +86,7 @@ public class SendMsgHandler extends AbstactSystemHandler {
          */
         void average() {
             try {
-                TimeUnit.SECONDS.sleep(cmd.getPeriodMilliseconds()/1000);
+                TimeUnit.SECONDS.sleep(cmd.getPeriodMilliseconds() / 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -104,8 +109,8 @@ public class SendMsgHandler extends AbstactSystemHandler {
          * 增速发送
          */
         void increase() {
-            long time = cmd.getPeriodMilliseconds()-cmd.getStepMilliseconds()*loopTimes.incrementAndGet();
-            if(time<0){
+            long time = cmd.getPeriodMilliseconds() - cmd.getStepMilliseconds() * loopTimes.incrementAndGet();
+            if (time < 0) {
                 time = 10;
             }
             try {
@@ -115,10 +120,10 @@ public class SendMsgHandler extends AbstactSystemHandler {
             }
         }
 
-        protected void doSendMsg(){
+        protected void doSendMsg() {
             UnmodifiableArrayList<MessageClient> nettyChannels = MessageClientFactory.getClients();
-            for (MessageClient client:nettyChannels){
-                String mockData = "这是"+client.getClientId()+"模拟的消息";
+            for (MessageClient client : nettyChannels) {
+                String mockData = "这是" + client.getClientId() + "模拟的消息";
                 MqttPublishMessage publish = MqttMessageBuilders.publish()
                     .topicName("/client/mock")
                     .retained(false)

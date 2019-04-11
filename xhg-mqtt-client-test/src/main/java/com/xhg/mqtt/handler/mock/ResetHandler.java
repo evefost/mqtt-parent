@@ -48,26 +48,32 @@ public class ResetHandler extends AbstactSystemHandler {
 
         @Override
         public void run() {
-            while (!stop) {
-                switch (cmd.getType()) {
-                    case 0:
-                        MessageClientFactory.reset(cmd.getCount());
-                        stop = true;
-                        break;
-                    case 1:
-                        average();
-                        break;
-                    case 2:
-                        random();
-                        break;
-                    default:
+            try {
+                while (!stop) {
+                    switch (cmd.getType()) {
+                        case 0:
+                            MessageClientFactory.reset(cmd.getCount());
+                            stop = true;
+                            break;
+                        case 1:
+                            average();
+                            break;
+                        case 2:
+                            random();
+                            break;
+                        default:
+                    }
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(cmd.getPeriodMilliseconds());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-                try {
-                    TimeUnit.MILLISECONDS.sleep(cmd.getPeriodMilliseconds());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            } catch (Throwable ex) {
+                logger.warn("测试任务异常", ex);
             }
+
+            stop = true;
         }
 
         /**
