@@ -30,7 +30,7 @@
   </appenders>
 
   <loggers>
-    <logger name="com.xhg.mqtt" level="debug"/>
+    <logger name="com.xhg.mqtt" level="info"/>
     <Root level="warn">
       <AppenderRef ref="Console"/>
       <AppenderRef ref="RollingFile"/>

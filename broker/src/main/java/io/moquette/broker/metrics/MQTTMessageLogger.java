@@ -16,20 +16,23 @@
 
 package io.moquette.broker.metrics;
 
+import static io.moquette.broker.Utils.messageId;
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
 import io.moquette.broker.NettyUtils;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.mqtt.*;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttSubAckMessage;
+import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
+import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
-
-import static io.moquette.broker.Utils.messageId;
-import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
 /**
  *
@@ -73,7 +76,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
                 break;
             case SUBSCRIBE:
                 MqttSubscribeMessage subscribe = (MqttSubscribeMessage) msg;
-                LOG.info("{} SUBSCRIBE <{}> to topics {}", direction, clientID,
+                LOG.debug("{} SUBSCRIBE <{}> to topics {}", direction, clientID,
                     subscribe.payload().topicSubscriptions());
                 break;
             case UNSUBSCRIBE:
@@ -94,7 +97,7 @@ public class MQTTMessageLogger extends ChannelDuplexHandler {
             case SUBACK:
                 MqttSubAckMessage suback = (MqttSubAckMessage) msg;
                 final List<Integer> grantedQoSLevels = suback.payload().grantedQoSLevels();
-                LOG.info("{} SUBACK <{}> packetID <{}>, grantedQoses {}", direction, clientID, messageId(msg),
+                LOG.debug("{} SUBACK <{}> packetID <{}>, grantedQoses {}", direction, clientID, messageId(msg),
                     grantedQoSLevels);
                 break;
         }

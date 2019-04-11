@@ -16,6 +16,9 @@
 
 package io.moquette.broker.metrics;
 
+/**
+ * 每个通道的流量
+ */
 public class BytesMetrics {
 
     private long m_readBytes;

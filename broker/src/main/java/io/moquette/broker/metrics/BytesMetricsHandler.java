@@ -16,6 +16,8 @@
 
 package io.moquette.broker.metrics;
 
+import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -23,8 +25,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
-
-import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
 public class BytesMetricsHandler extends ChannelDuplexHandler {
 
@@ -61,6 +61,7 @@ public class BytesMetricsHandler extends ChannelDuplexHandler {
     @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         BytesMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
+        //关闭后收集读写流量
         m_collector.sumReadBytes(metrics.readBytes());
         m_collector.sumWroteBytes(metrics.wroteBytes());
         super.close(ctx, promise);

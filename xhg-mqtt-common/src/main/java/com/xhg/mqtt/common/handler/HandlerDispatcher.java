@@ -28,8 +28,8 @@ public class HandlerDispatcher {
         handlers.add(handler);
     }
 
-    public static void addAllHandler(List<Handler> handlers) {
-        handlers.addAll(handlers);
+    public static void addAllHandler(List<Handler> handlerList) {
+        handlers.addAll(handlerList);
     }
 
 

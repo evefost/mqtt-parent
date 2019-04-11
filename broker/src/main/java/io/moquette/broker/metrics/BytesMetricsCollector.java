@@ -19,6 +19,7 @@ package io.moquette.broker.metrics;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * 总流量
  * Collects all the metrics from the various pipeline.
  */
 public class BytesMetricsCollector {

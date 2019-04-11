@@ -1,8 +1,14 @@
 package com.xhg.mqtt.controller;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.protobuf.ByteString;
 import com.sun.javafx.UnmodifiableArrayList;
-import com.xhg.mqtt.client.*;
+import com.xhg.mqtt.client.ClientOptions;
+import com.xhg.mqtt.client.MessageClient;
+import com.xhg.mqtt.client.MessageClientFactory;
+import com.xhg.mqtt.client.MqttNettyClient;
+import com.xhg.mqtt.client.SingletonClient;
 import com.xhg.mqtt.common.EventCodeEnum;
 import com.xhg.mqtt.common.proto.BoxInfoPb.BoxInfo;
 import com.xhg.mqtt.common.proto.BoxInfoPb.BoxStatus;
@@ -13,15 +19,6 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.SmartInitializingSingleton;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +29,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Created by xieyang on 19/3/30.
@@ -115,6 +118,26 @@ public class MqttClientController implements SmartInitializingSingleton {
     }
 
 
+
+    @GetMapping("/login")
+    String login() throws InterruptedException, InvocationTargetException, NoSuchMethodException, InstantiationException, CloneNotSupportedException, IllegalAccessException {
+
+        MessageClient client = SingletonClient.getInstance();
+        String topic = productKey + "/server/a/b/c/" + client.getClientId();
+        Builder builder = buildLoginMessage(client.getClientId());
+        MqttMessage message = builder.build();
+        byte[] payload = message.toByteArray();
+        MqttPublishMessage publish = MqttMessageBuilders.publish()
+            .topicName(topic)
+            .messageId(id.incrementAndGet())
+            .retained(true)
+            .qos(MqttQoS.AT_LEAST_ONCE)
+            .payload(Unpooled.copiedBuffer(payload)).build();
+        client.send(publish);
+        return "send success";
+    }
+
+
     @GetMapping("/broadcast")
     String broadcast() {
         String topic2 = "/topic/all";
@@ -188,9 +211,36 @@ public class MqttClientController implements SmartInitializingSingleton {
         return messageBuilder;
     }
 
+    private Builder buildLoginMessage(String clientId) {
+        Builder messageBuilder = MqttMessage.newBuilder();
+        MqttHead.Builder headBuilder = MqttHead.newBuilder();
+        headBuilder.setDeviceId(clientId);
+        headBuilder.setMessageId(UUID.randomUUID().toString());
+        headBuilder.setCc(1);
+        headBuilder.setEventCode(EventCodeEnum.DEVICE_LOGIN.getCode());
+        messageBuilder.setHead(headBuilder);
+
+        BoxInfo.Builder boxbuild = BoxInfo.newBuilder();
+        BoxStatus.Builder statusBuilder = BoxStatus.newBuilder();
+        statusBuilder.setBoxStatus(1);
+        statusBuilder.setTemperature(1.5d);
+        BoxStatus status1 = statusBuilder.build();
+        BoxStatus.Builder statusBuilder2 = BoxStatus.newBuilder();
+        statusBuilder2.setBoxStatus(3);
+        statusBuilder2.setTemperature(2.3d);
+        BoxStatus status2 = statusBuilder2.build();
+        boxbuild.addBoxStatus(status1);
+        boxbuild.addBoxStatus(status2);
+
+        BoxInfo boxInfo = boxbuild.build();
+        ByteString box = boxInfo.toByteString();
+        messageBuilder.setBody(box);
+        return messageBuilder;
+    }
+
     private void initClientOptions() {
         options = new ClientOptions();
-        options.setKeepAlive(30);
+        options.setKeepAlive(90);
         options.setAutoReconnect(true);
         String[] nodes = {node};
         options.setBrokerNodes(nodes);

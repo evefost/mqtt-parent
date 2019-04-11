@@ -43,12 +43,8 @@ public class PublisherListener extends AbstractInterceptHandler implements Decod
     public void onConnect(InterceptConnectMessage mqttMessage) {
         String clientID = mqttMessage.getClientID();
         logger.debug("收到[{}]连接消息", clientID);
-        MqttWrapperMessage message = new MqttWrapperMessage();
-        message.setSrcMessage(mqttMessage.getMsg());
-        message.setFrom(POINT.CLIENT);
-        message.setTo(POINT.SERVER);
-        message.setClientId(clientID);
-        HandlerDispatcher.process(message);
+        MqttMessage msg = mqttMessage.getMsg();
+        HandlerDispatcher.process(msg);
     }
 
     @Override
