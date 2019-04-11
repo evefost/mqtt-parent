@@ -93,7 +93,11 @@ public class MetricsMqttListener implements MqttListener<MqttMessage>, SmartInit
         clientDisconnectedCount.increment();
     }
 
-
+    @Override
+    public void open() {
+        clientOnlineCount.set(sessionManager.getOnlineSize());
+        clientConnectCount.increment();
+    }
 
 
     @Override

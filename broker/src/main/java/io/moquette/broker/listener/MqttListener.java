@@ -17,4 +17,6 @@ public interface MqttListener<M> {
     void output(M message);
 
     void close();
+
+    void open();
 }

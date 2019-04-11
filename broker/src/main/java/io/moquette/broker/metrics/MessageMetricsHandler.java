@@ -18,6 +18,7 @@ package io.moquette.broker.metrics;
 
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
+import io.moquette.broker.NettyUtils;
 import io.moquette.broker.listener.MqttListener;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -43,9 +44,11 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         Attribute<MessageMetrics> attr = ctx.channel().attr(ATTR_KEY_METRICS);
         attr.set(new MessageMetrics());
-
+        mqttListener.open();
         super.channelActive(ctx);
     }
+
+
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -68,8 +71,17 @@ public class MessageMetricsHandler extends ChannelDuplexHandler {
         MessageMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         m_collector.sumReadMessages(metrics.messagesRead());
         m_collector.sumWroteMessages(metrics.messagesWrote());
-        mqttListener.close();
+
         super.close(ctx, promise);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        String clientID = NettyUtils.clientID(ctx.channel());
+        if (clientID != null && !clientID.isEmpty()) {
+            mqttListener.close();
+        }
+        ctx.fireChannelInactive();
     }
 
     public static MessageMetrics getMessageMetrics(Channel channel) {
