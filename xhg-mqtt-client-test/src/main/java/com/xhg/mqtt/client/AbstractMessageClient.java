@@ -58,6 +58,7 @@ public abstract class AbstractMessageClient implements MessageClient<MqttPublish
 
     protected volatile Channel channel;
 
+    protected volatile boolean isReconnect;
 
     protected Bootstrap bootstrap;
 
@@ -88,7 +89,7 @@ public abstract class AbstractMessageClient implements MessageClient<MqttPublish
             return;
         }
 
-        logger.info("clientId[{}] 发送连接请求:", clientId);
+        logger.info("clientId[{}] 发送mqtt连接[{}:{}]命令", clientId,options.getSelectNode().getHost(),options.getSelectNode().getPort());
         MqttFixedHeader mqttFixedHeader = new MqttFixedHeader(MqttMessageType.CONNECT, false, MqttQoS.AT_MOST_ONCE,
                 false, 0);
         MqttConnectVariableHeader mqttConnectVariableHeader = new MqttConnectVariableHeader(
@@ -171,7 +172,12 @@ public abstract class AbstractMessageClient implements MessageClient<MqttPublish
             return;
         }
         ClientOptions.Node node = options.getSelectNode();
-        logger.info("[{}] 重连接>>[{}:{}]", clientId,node.getHost(),node.getPort());
+        if(isReconnect){
+            logger.info("[{}] 重连接 >> [{}:{}]", clientId,node.getHost(),node.getPort());
+        }else {
+            logger.info("[{}] 连接 >> [{}:{}]", clientId,node.getHost(),node.getPort());
+            isReconnect = true;
+        }
         try {
             channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
             channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(AbstractMessageClient.this);

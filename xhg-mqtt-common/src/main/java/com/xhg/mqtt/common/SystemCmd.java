@@ -11,7 +11,7 @@ public enum SystemCmd {
     /**
      * 测试广播
      */
-    TEST_BROADCAST(SYSTEM_CONTROL_PATTERN+"/test/broadcast"),
+    TEST_BROADCAST("/sys/test/broadcast"),
 
     /**
      * 关闭所有客户端
