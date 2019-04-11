@@ -9,7 +9,7 @@ public interface MetricsName {
     /**
      * mqtt 出站信息量
      */
-    String MQTT_MESSAGE_OUTPUT ="mqtt_message_input";
+    String MQTT_MESSAGE_OUTPUT ="mqtt_message_output";
 
     /**
      * mqtt在线设备数
