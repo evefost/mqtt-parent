@@ -5,7 +5,6 @@ import com.xhg.mqtt.common.POINT;
 import com.xhg.mqtt.common.handler.HandlerDispatcher;
 import com.xhg.mqtt.common.proto.MqttMessagePb;
 import com.xhg.mqtt.common.proto.MqttMessagePb.MqttHead;
-import com.xhg.mqtt.mq.handler.up.DeviceConnectHandler;
 import com.xhg.mqtt.mq.message.MqttWrapperMessage;
 import io.moquette.interception.AbstractInterceptHandler;
 import io.moquette.interception.messages.InterceptConnectMessage;
@@ -15,7 +14,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author xie
@@ -29,9 +27,6 @@ public class PublisherListener extends AbstractInterceptHandler implements Decod
         return "MqttBrokerApplicationPublishListener";
     }
 
-
-    @Autowired
-    private DeviceConnectHandler deviceConnectHandler;
 
     @Override
     public void onDisconnect(InterceptDisconnectMessage msg) {
