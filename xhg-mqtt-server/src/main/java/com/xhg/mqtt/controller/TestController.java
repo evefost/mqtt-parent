@@ -1,8 +1,6 @@
 package com.xhg.mqtt.controller;
 
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.DisconnectCmd;
 import com.xhg.mqtt.common.cmd.IncreaseCmd;
@@ -15,14 +13,17 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * 测试用
@@ -140,6 +141,8 @@ public class TestController {
         sessionManager.publish(publish);
         return true;
     }
+
+
 
 
 

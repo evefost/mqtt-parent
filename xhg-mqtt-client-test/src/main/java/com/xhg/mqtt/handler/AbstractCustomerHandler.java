@@ -17,11 +17,10 @@ public abstract class AbstractCustomerHandler extends AbstractMqttPublishHandler
 
     @Override
     public boolean support(Object object) {
-        boolean support = super.support(object);
-        if(!support){
+        if(super.support(object)){
             return false;
         }
-        MqttMessage decode = decode((MqttPublishMessage) object);
+        MqttMessage decode = decodeHeader((MqttPublishMessage) object);
         MqttHead head = decode.getHead();
         if( getEventCode().equals(head.getEventCode())){
             return true;
@@ -29,7 +28,7 @@ public abstract class AbstractCustomerHandler extends AbstractMqttPublishHandler
         return false;
     }
 
-    protected MqttMessagePb.MqttMessage decode( MqttPublishMessage message) {
+    protected MqttMessagePb.MqttMessage decodeHeader( MqttPublishMessage message) {
         ByteBuf byteBuf = message.payload();
         byte[] payload = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(payload);

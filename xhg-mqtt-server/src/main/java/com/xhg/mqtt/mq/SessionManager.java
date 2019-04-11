@@ -1,9 +1,5 @@
 package com.xhg.mqtt.mq;
 
-import static io.netty.handler.codec.mqtt.MqttQoS.AT_LEAST_ONCE;
-import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
-import static io.netty.handler.codec.mqtt.MqttQoS.EXACTLY_ONCE;
-
 import io.moquette.broker.Session;
 import io.moquette.broker.SessionRegistry;
 import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
@@ -12,9 +8,13 @@ import io.moquette.broker.subscriptions.Topic;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+
+import static io.netty.handler.codec.mqtt.MqttQoS.*;
 
 
 public class SessionManager {
@@ -23,7 +23,7 @@ public class SessionManager {
 
     private SessionRegistry sessionRegistry;
 
-    private  ISubscriptionsDirectory subscriptions;
+    private ISubscriptionsDirectory subscriptions;
 
     public SessionRegistry getSessionRegistry() {
         return sessionRegistry;
@@ -38,6 +38,12 @@ public class SessionManager {
         return sessionRegistry.getSessions().size();
     }
 
+
+    public ConcurrentMap<String, Session> getSessions() {
+        return sessionRegistry.getSessions();
+
+    }
+
     public Session getSession(Object clientId) {
         return sessionRegistry.getSessions().get(clientId);
     }
@@ -46,7 +52,7 @@ public class SessionManager {
         this.subscriptions = subscriptions;
     }
 
-   public void publish(MqttPublishMessage msg) {
+    public void publish(MqttPublishMessage msg) {
 
         final MqttQoS qos = msg.fixedHeader().qosLevel();
         final String topicName = msg.variableHeader().topicName();
@@ -62,16 +68,16 @@ public class SessionManager {
         }
         switch (qos) {
             case AT_MOST_ONCE:
-                publish2Subscribers(payload,topic,AT_MOST_ONCE);
+                publish2Subscribers(payload, topic, AT_MOST_ONCE);
                 //todo
                 break;
             case AT_LEAST_ONCE: {
-                publish2Subscribers(payload,topic,AT_LEAST_ONCE);
+                publish2Subscribers(payload, topic, AT_LEAST_ONCE);
                 //todo
                 break;
             }
             case EXACTLY_ONCE: {
-                publish2Subscribers(payload,topic,EXACTLY_ONCE);
+                publish2Subscribers(payload, topic, EXACTLY_ONCE);
                 break;
             }
             default:
@@ -79,7 +85,6 @@ public class SessionManager {
                 break;
         }
     }
-
 
 
     private void publish2Subscribers(ByteBuf origPayload, Topic topic, MqttQoS publishingQos) {

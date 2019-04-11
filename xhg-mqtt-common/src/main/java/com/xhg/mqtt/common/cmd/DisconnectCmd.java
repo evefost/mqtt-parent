@@ -14,7 +14,7 @@ public class DisconnectCmd extends MockCmd {
     private  volatile boolean start;
 
     /**
-     * 模拟方式(0指定断开数,1匀速断开,2连续随机机断开)
+     * 模拟方式(0指定断开数,1匀速断开,2连续随机断开)
      */
     private volatile int type;
 
