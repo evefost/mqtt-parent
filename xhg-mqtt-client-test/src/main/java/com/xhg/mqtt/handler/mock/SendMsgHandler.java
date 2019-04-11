@@ -1,22 +1,22 @@
 package com.xhg.mqtt.handler.mock;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.client.MessageClient;
 import com.xhg.mqtt.client.MessageClientFactory;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.MockMsgCmd;
+import com.xhg.mqtt.common.handler.AbstactSystemHandler;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import org.springframework.stereotype.Component;
-
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import org.springframework.stereotype.Component;
 
 /**
  * 启动模拟客户端发送消息
@@ -24,7 +24,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author xie
  */
 @Component
-public class SendMsgHandler extends AbstactMockHandler {
+public class SendMsgHandler extends AbstactSystemHandler {
 
     private volatile AtomicInteger loopTimes = new AtomicInteger(0);
 

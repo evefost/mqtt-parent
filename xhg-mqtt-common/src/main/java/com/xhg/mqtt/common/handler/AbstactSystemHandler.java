@@ -1,18 +1,30 @@
-package com.xhg.mqtt.handler.mock;
+package com.xhg.mqtt.common.handler;
 
+import com.xhg.mqtt.common.POINT;
 import com.xhg.mqtt.common.cmd.MockCmd;
-import com.xhg.mqtt.common.handler.AbstractMqttPublishHandler;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class AbstactMockHandler extends AbstractMqttPublishHandler {
+/**
+ * 系统定义的处理器
+ * @author xie
+ */
+public abstract class AbstactSystemHandler extends AbstractMqttPublishHandler {
+
 
     protected  final static ExecutorService service = Executors.newFixedThreadPool(2);
 
     protected volatile AtomicInteger loopTimes = new AtomicInteger(0);
 
     protected volatile boolean stop =true;
+
+
+    @Override
+    public boolean support(Object object) {
+        return super.support(object);
+    }
+
 
     protected void handleCmd(MockCmd cmd,Runnable task){
         if (cmd.isStart()&& stop) {
@@ -26,5 +38,10 @@ public abstract class AbstactMockHandler extends AbstractMqttPublishHandler {
             logger.info("停止{}...",cmd.getDescription());
             stop = true;
         }
+    }
+
+    @Override
+    public POINT getPoint() {
+        return POINT.SERVER;
     }
 }

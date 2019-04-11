@@ -3,12 +3,12 @@ package com.xhg.mqtt.handler.mock;
 import com.xhg.mqtt.client.MessageClientFactory;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.DisconnectCmd;
+import com.xhg.mqtt.common.handler.AbstactSystemHandler;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
-import org.springframework.stereotype.Component;
-
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import org.springframework.stereotype.Component;
 
 /**
  * 关闭客户端连接
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * @author xie
  */
 @Component
-public class DisconnectHandler extends AbstactMockHandler {
+public class DisconnectHandler extends AbstactSystemHandler {
 
     private DisconnectCmd cmd;
 
