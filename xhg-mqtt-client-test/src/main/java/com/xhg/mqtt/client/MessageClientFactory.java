@@ -16,21 +16,20 @@
 
 package com.xhg.mqtt.client;
 
+import static com.xhg.mqtt.common.Constants.SYSTEM_CONTROL_PATTERN;
+
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.util.ServerUtils;
 import io.netty.bootstrap.Bootstrap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static com.xhg.mqtt.common.Constants.SYSTEM_CONTROL_PATTERN;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use the encoder/decoder
@@ -88,12 +87,6 @@ public class MessageClientFactory {
             options.getTopics().addAll(speciallyTopics);
         }
         addSystemTopics(options, isMainClient);
-//        Channel channel = null;
-//        try {
-//            channel = bootstrap.connect(node.getHost(), node.getPort()).sync().channel();
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
         M instance = null;
         try {
             Constructor<? extends MessageClient> constructor = clientClass
@@ -103,8 +96,6 @@ public class MessageClientFactory {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-//        channel.attr(ClientNettyMQTTHandler.ATTR_KEY_CLIENT_CHANNEL).set(instance);
-//        instance.connect();
         clients.add(instance);
         return instance;
     }

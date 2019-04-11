@@ -16,20 +16,29 @@
 
 package com.xhg.mqtt.client;
 
+import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+
 import com.sun.javafx.UnmodifiableArrayList;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.mqtt.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import io.netty.handler.codec.mqtt.MqttConnectMessage;
+import io.netty.handler.codec.mqtt.MqttConnectPayload;
+import io.netty.handler.codec.mqtt.MqttConnectVariableHeader;
+import io.netty.handler.codec.mqtt.MqttFixedHeader;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttMessageBuilders;
+import io.netty.handler.codec.mqtt.MqttMessageType;
+import io.netty.handler.codec.mqtt.MqttPublishMessage;
+import io.netty.handler.codec.mqtt.MqttQoS;
+import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
+import io.netty.handler.codec.mqtt.MqttVersion;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -89,16 +98,6 @@ public abstract class AbstractMessageClient implements MessageClient<MqttPublish
                 null, (byte[]) null);
         MqttConnectMessage message = new MqttConnectMessage(mqttFixedHeader, mqttConnectVariableHeader, mqttConnectPayload);
         channel.writeAndFlush(message);
-    }
-
-
-    private void createChannel() {
-        try {
-            channel = bootstrap.connect(options.getSelectNode().getHost(), options.getSelectNode().getPort()).sync().channel();
-            connect();
-        } catch (Throwable throwable) {
-            logger.error("connect mqtt server[{}:{}]  failure ",options.getSelectNode().getHost(),options.getSelectNode().getPort(),throwable);
-        }
     }
 
 
@@ -168,6 +167,9 @@ public abstract class AbstractMessageClient implements MessageClient<MqttPublish
                 e.printStackTrace();
             }
         }
+        if(channel != null && channel.isOpen()){
+            return;
+        }
         ClientOptions.Node node = options.getSelectNode();
         logger.info("[{}] 重连接>>[{}:{}]", clientId,node.getHost(),node.getPort());
         try {
@@ -180,6 +182,7 @@ public abstract class AbstractMessageClient implements MessageClient<MqttPublish
             onClosed(e);
         }
     }
+
 
     protected boolean connected() {
         if(channel == null){
