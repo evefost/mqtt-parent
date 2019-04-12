@@ -3,22 +3,18 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!--<parent>-->
-        <!--<groupId>com.xhg</groupId>-->
-        <!--<artifactId>xhg-micro-parent</artifactId>-->
-        <!--<version>1.0.3</version>-->
-    <!--</parent>-->
 
-    <groupId>com.xhg</groupId>
+
+    <groupId>com.xie</groupId>
     <artifactId>mqtt-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <name>${artifactId}-${project.version}</name>
     <modules>
         <module>broker</module>
-        <module>xhg-mqtt-server</module>
-        <module>xhg-mqtt-client-test</module>
-        <module>xhg-mqtt-common</module>
+        <module>mqtt-server</module>
+        <module>mqtt-client-test</module>
+        <module>mqtt-common</module>
     </modules>
 
     <properties>

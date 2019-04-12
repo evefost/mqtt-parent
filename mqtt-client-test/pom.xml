@@ -3,19 +3,16 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <!--<parent>-->
-  <!--<groupId>com.xhg</groupId>-->
-  <!--<artifactId>xhg-micro-parent</artifactId>-->
-  <!--<version>1.0.3</version>-->
-  <!--</parent>-->
   <parent>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-parent</artifactId>
     <version>Edgware.SR3</version>
     <relativePath/>
   </parent>
+
+
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>xhg-mqtt-client-test</artifactId>
+  <artifactId>mqtt-client-test</artifactId>
   <version>1.0-SNAPSHOT</version>
   <name>${artifactId}-${project.version}</name>
   <properties>
@@ -31,8 +28,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.xhg</groupId>
-      <artifactId>xhg-mqtt-common</artifactId>
+      <groupId>com.xie</groupId>
+      <artifactId>mqtt-common</artifactId>
       <version>1.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>

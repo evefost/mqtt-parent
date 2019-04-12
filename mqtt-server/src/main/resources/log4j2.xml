@@ -31,7 +31,7 @@
 
 
   <loggers>
-    <logger name="com.xhg.mqtt" level="info"/>
+    <logger name="com.xie.mqtt" level="info"/>
     <logger name="io.moquette" level="info"/>
     <logger name="org.springframework" level="info"/>
     <Root level="error">
