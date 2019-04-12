@@ -15,6 +15,7 @@
         <module>mqtt-server</module>
         <module>mqtt-client-test</module>
         <module>mqtt-common</module>
+        <module>monitor-server</module>
     </modules>
 
     <properties>
