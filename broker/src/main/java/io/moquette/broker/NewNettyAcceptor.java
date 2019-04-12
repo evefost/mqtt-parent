@@ -87,8 +87,11 @@ class NewNettyAcceptor {
 
     private MqttListener mqttListener;
 
-    public NewNettyAcceptor(MqttListener mqttListener) {
+    private MqttListener bytesListener;
+
+    public NewNettyAcceptor(MqttListener mqttListener,MqttListener bytesListener) {
         this.mqttListener = mqttListener;
+        this.bytesListener = bytesListener;
     }
     static class WebSocketFrameToByteBufDecoder extends MessageToMessageDecoder<BinaryWebSocketFrame> {
 
@@ -288,7 +291,7 @@ class NewNettyAcceptor {
         if (errorsCather.isPresent()) {
             pipeline.addLast("bugsnagCatcher", errorsCather.get());
         }
-        pipeline.addFirst("bytemetrics", new BytesMetricsHandler(bytesMetricsCollector));
+        pipeline.addFirst("bytemetrics", new BytesMetricsHandler(bytesMetricsCollector,bytesListener));
         pipeline.addLast("autoflush", new AutoFlushHandler(1, TimeUnit.SECONDS));
         pipeline.addLast("decoder", new MqttDecoder(maxBytesInMessage));
         pipeline.addLast("encoder", MqttEncoder.INSTANCE);

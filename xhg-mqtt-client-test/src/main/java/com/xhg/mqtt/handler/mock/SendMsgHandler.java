@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xhg.mqtt.client.MessageClient;
 import com.xhg.mqtt.client.MessageClientFactory;
+import com.xhg.mqtt.common.Constants;
 import com.xhg.mqtt.common.SystemCmd;
 import com.xhg.mqtt.common.cmd.MockMsgCmd;
 import com.xhg.mqtt.common.handler.AbstactSystemHandler;
@@ -125,7 +126,7 @@ public class SendMsgHandler extends AbstactSystemHandler {
             for (MessageClient client : nettyChannels) {
                 String mockData = "这是" + client.getClientId() + "模拟的消息";
                 MqttPublishMessage publish = MqttMessageBuilders.publish()
-                    .topicName("/client/mock")
+                    .topicName(Constants.SYSTEM_CONTROL_PATTERN+"/client/mock")
                     .retained(false)
                     .qos(MqttQoS.AT_MOST_ONCE)
                     .payload(Unpooled.copiedBuffer(mockData.getBytes(UTF_8))).build();

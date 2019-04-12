@@ -18,6 +18,7 @@ package io.moquette.broker.metrics;
 
 import static io.netty.channel.ChannelFutureListener.CLOSE_ON_FAILURE;
 
+import io.moquette.broker.listener.MqttListener;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -32,8 +33,10 @@ public class BytesMetricsHandler extends ChannelDuplexHandler {
 
     private BytesMetricsCollector m_collector;
 
-    public BytesMetricsHandler(BytesMetricsCollector collector) {
+    private MqttListener<ByteBuf> mqttListener;
+    public BytesMetricsHandler(BytesMetricsCollector collector,MqttListener<ByteBuf> mqttListener) {
         m_collector = collector;
+        this.mqttListener = mqttListener;
     }
 
     @Override
@@ -48,6 +51,7 @@ public class BytesMetricsHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         BytesMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         metrics.incrementRead(((ByteBuf) msg).readableBytes());
+        mqttListener.input((ByteBuf) msg);
         ctx.fireChannelRead(msg);
     }
 
@@ -55,6 +59,7 @@ public class BytesMetricsHandler extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         BytesMetrics metrics = ctx.channel().attr(ATTR_KEY_METRICS).get();
         metrics.incrementWrote(((ByteBuf) msg).writableBytes());
+        mqttListener.output((ByteBuf) msg);
         ctx.write(msg, promise).addListener(CLOSE_ON_FAILURE);
     }
 

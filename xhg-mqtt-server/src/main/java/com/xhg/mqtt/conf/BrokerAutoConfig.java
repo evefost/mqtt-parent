@@ -1,6 +1,7 @@
 package com.xhg.mqtt.conf;
 
-import com.xhg.mqtt.metrics.MetricsMqttListener;
+import com.xhg.mqtt.metrics.BytesMetrics;
+import com.xhg.mqtt.metrics.MetricsMqtt;
 import com.xhg.mqtt.mq.PublisherListener;
 import com.xhg.mqtt.mq.SessionManager;
 import io.moquette.BrokerConstants;
@@ -72,8 +73,10 @@ public class BrokerAutoConfig implements ApplicationContextAware, SmartInitializ
         IResourceLoader classpathLoader = new ClasspathResourceLoader();
         final IConfig classPathConfig = new ResourceLoaderConfig(classpathLoader);
         List<? extends InterceptHandler> userHandlers = Collections.singletonList(getPublisherListener());
-        MqttListener mqttListener = applicationContext.getBean(MetricsMqttListener.class);
+        MqttListener mqttListener = applicationContext.getBean(MetricsMqtt.class);
         broker.setMqttListener(mqttListener);
+        BytesMetrics bytesMetrics = applicationContext.getBean(BytesMetrics.class);
+        broker.setBytesListener(bytesMetrics);
         classPathConfig.setProperty(BrokerConstants.PORT_PROPERTY_NAME, port);
         classPathConfig.setProperty(BrokerConstants.HOST_PROPERTY_NAME, host);
         broker.startServer(classPathConfig, userHandlers);

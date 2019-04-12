@@ -57,8 +57,8 @@ public class PublisherListener extends AbstractInterceptHandler implements Decod
         byte[] payload = new byte[byteBuf.readableBytes()];
         byteBuf.readBytes(payload);
         message.setMqttPayload(payload);
-        decode(message);
-        HandlerDispatcher.process(message);
+       // decode(message);
+        //HandlerDispatcher.process(message);
     }
 
     @Override

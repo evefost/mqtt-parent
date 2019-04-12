@@ -38,7 +38,6 @@ import io.moquette.interception.InterceptHandler;
 import io.moquette.persistence.H2Builder;
 import io.moquette.persistence.MemorySubscriptionsRepository;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
-import io.netty.util.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -71,6 +70,8 @@ public class Server {
 
 
     private MqttListener mqttListener;
+   private MqttListener bytesListener;
+
     public static void main(String[] args) throws IOException {
         final Server server = new Server();
         server.startServer();
@@ -82,6 +83,11 @@ public class Server {
     public void setMqttListener(MqttListener mqttListener) {
         this.mqttListener = mqttListener;
     }
+    public void setBytesListener(MqttListener bytesListener) {
+        this.bytesListener = bytesListener;
+    }
+
+
     /**
      * Starts Moquette bringing the configuration from the file located at m_config/moquette.conf
      *
@@ -206,7 +212,7 @@ public class Server {
                                                                             dispatcher);
 
         final NewNettyMQTTHandler mqttHandler = new NewNettyMQTTHandler(connectionFactory);
-        acceptor = new NewNettyAcceptor(mqttListener);
+        acceptor = new NewNettyAcceptor(mqttListener,bytesListener);
         acceptor.initialize(mqttHandler, config, sslCtxCreator);
 
         final long startTime = System.currentTimeMillis() - start;

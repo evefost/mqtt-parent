@@ -6,7 +6,9 @@ import static com.xhg.mqtt.metrics.MetricsName.MQTT_CLIENT_PING;
 import static com.xhg.mqtt.metrics.MetricsName.MQTT_DEVICE_ONLINE;
 import static com.xhg.mqtt.metrics.MetricsName.MQTT_MESSAGE_INPUT;
 import static com.xhg.mqtt.metrics.MetricsName.MQTT_MESSAGE_OUTPUT;
+import static com.xhg.mqtt.metrics.MetricsName.MQTT_MESSAGE_TOTAL;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.xhg.mqtt.mq.SessionManager;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -26,7 +28,7 @@ import org.springframework.stereotype.Component;
  * 统计消息设备信息
  */
 @Component
-public class MetricsMqttListener implements MqttListener<MqttMessage>, SmartInitializingSingleton {
+public class MetricsMqtt implements MqttListener<MqttMessage>, SmartInitializingSingleton {
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -45,6 +47,9 @@ public class MetricsMqttListener implements MqttListener<MqttMessage>, SmartInit
      * 出站信息
      */
     private Counter outputCounter;
+
+
+    private AtomicDouble totalMessageCount;
 
     /**
      * 在线客户端
@@ -108,6 +113,7 @@ public class MetricsMqttListener implements MqttListener<MqttMessage>, SmartInit
         clientConnectCount = registry.counter(MQTT_CLIENT_CONNECT);
         clientDisconnectedCount = registry.counter(MQTT_CLIENT_DISCONNECTED);
         clientPingCount = registry.counter(MQTT_CLIENT_PING);
+        totalMessageCount = registry.gauge(MQTT_MESSAGE_TOTAL, new AtomicDouble(0d));
         new Thread(new MetresOnlineTask()).start();
     }
 
@@ -117,6 +123,7 @@ public class MetricsMqttListener implements MqttListener<MqttMessage>, SmartInit
             while (!stopCount){
                 logger.info("更新在线设备统计数[{}]",sessionManager.getOnlineSize());
                 clientOnlineCount.set(sessionManager.getOnlineSize());
+                totalMessageCount.set(inputCounter.count()+outputCounter.count());
                 try {
                     TimeUnit.SECONDS.sleep(10);
                 } catch (InterruptedException e) {
