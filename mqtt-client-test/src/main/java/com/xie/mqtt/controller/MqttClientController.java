@@ -10,6 +10,8 @@ import com.xie.mqtt.client.MessageClientFactory;
 import com.xie.mqtt.client.MqttNettyClient;
 import com.xie.mqtt.client.SingletonClient;
 import com.xie.mqtt.common.EventCodeEnum;
+import com.xie.mqtt.common.handler.Handler;
+import com.xie.mqtt.common.handler.HandlerDispatcher;
 import com.xie.mqtt.common.proto.BoxInfoPb.BoxInfo;
 import com.xie.mqtt.common.proto.BoxInfoPb.BoxStatus;
 import com.xie.mqtt.common.proto.MqttMessagePb.MqttHead;
@@ -32,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -254,9 +257,11 @@ public class MqttClientController implements SmartInitializingSingleton {
             logger.warn("连接客户端初始化失败:", e);
         }
     }
-
+    @Autowired
+    private List<Handler> handlers;
     @Override
     public void afterSingletonsInstantiated() {
+        HandlerDispatcher.addAllHandler(handlers);
         initClientOptions();
     }
 }
