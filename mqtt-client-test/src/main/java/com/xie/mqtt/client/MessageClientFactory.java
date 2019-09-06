@@ -16,20 +16,21 @@
 
 package com.xie.mqtt.client;
 
-import static com.xie.mqtt.common.Constants.SYSTEM_CONTROL_PATTERN;
-
 import com.sun.javafx.UnmodifiableArrayList;
 import com.xie.mqtt.common.SystemCmd;
 import com.xie.mqtt.util.ServerUtils;
 import io.netty.bootstrap.Bootstrap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.xie.mqtt.common.Constants.SYSTEM_CONTROL_PATTERN;
 
 /**
  * Class used just to send and receive MQTT messages without any protocol login in action, just use the encoder/decoder
@@ -89,8 +90,7 @@ public class MessageClientFactory {
         addSystemTopics(options, isMainClient);
         M instance = null;
         try {
-            Constructor<? extends MessageClient> constructor = clientClass
-                .getDeclaredConstructor(Bootstrap.class, ClientOptions.class, String.class);
+            Constructor<? extends MessageClient> constructor = clientClass.getDeclaredConstructor(Bootstrap.class, ClientOptions.class, String.class);
             constructor.setAccessible(true);
             instance = (M) constructor.newInstance(bootstrap, options, clientId);
         } catch (Exception e) {

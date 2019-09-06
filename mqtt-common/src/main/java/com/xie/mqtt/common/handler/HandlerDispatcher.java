@@ -1,6 +1,9 @@
 package com.xie.mqtt.common.handler;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,15 +14,19 @@ import java.util.List;
  */
 public class HandlerDispatcher {
 
-
+    protected static final Logger logger = LoggerFactory.getLogger(HandlerDispatcher.class);
     private final static List<Handler> handlers = new ArrayList<>();
 
     public final static  boolean process(Object message) {
-        for (Handler handler : handlers) {
-            if (handler.support(message)) {
-                handler.processMessage(message);
-                return true;
+        try {
+            for (Handler handler : handlers) {
+                if (handler.support(message)) {
+                    handler.processMessage(message);
+                    return true;
+                }
             }
+        } catch (Throwable throwable) {
+            logger.error("消息处理失败:", throwable);
         }
         return false;
     }
