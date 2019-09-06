@@ -1,4 +1,4 @@
-package com.eve.mqtt.client2;
+package com.eve.mqtt.client;
 
 /**
  * <p>

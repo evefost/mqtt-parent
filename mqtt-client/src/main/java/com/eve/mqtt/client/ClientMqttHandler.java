@@ -14,10 +14,10 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 
-package com.eve.mqtt.client2;
+package com.eve.mqtt.client;
 
-import com.eve.mqtt.command.CommandHandler;
-import com.eve.mqtt.command.CommandManager;
+import com.eve.mqtt.client.command.CommandHandler;
+import com.eve.mqtt.client.command.CommandManager;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

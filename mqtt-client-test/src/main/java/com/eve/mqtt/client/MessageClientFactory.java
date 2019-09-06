@@ -16,8 +16,8 @@
 
 package com.eve.mqtt.client;
 
+import com.eve.mqtt.client.util.ClientUtils;
 import com.eve.mqtt.common.SystemCmd;
-import com.eve.mqtt.util.ClientUtils;
 import com.sun.javafx.UnmodifiableArrayList;
 import io.netty.bootstrap.Bootstrap;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.eve.mqtt.util;
+package com.eve.mqtt.client.util;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;

@@ -1,4 +1,4 @@
-package com.eve.mqtt.command;
+package com.eve.mqtt.client.command;
 
 import io.netty.handler.codec.mqtt.MqttFixedHeader;
 import io.netty.handler.codec.mqtt.MqttMessage;

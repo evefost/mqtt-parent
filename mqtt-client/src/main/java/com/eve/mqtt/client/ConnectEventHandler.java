@@ -1,7 +1,7 @@
-package com.eve.mqtt.client2;
+package com.eve.mqtt.client;
 
 
-import com.eve.mqtt.command.SendConnectHandler;
+import com.eve.mqtt.client.command.SendConnectHandler;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 

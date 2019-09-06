@@ -15,10 +15,10 @@
  */
 package com.eve.broker.core;
 
+import com.eve.broker.core.security.IAuthenticator;
 import com.eve.broker.core.security.PermitAllAuthorizatorPolicy;
 import com.eve.broker.core.subscriptions.CTrieSubscriptionDirectory;
 import com.eve.broker.core.subscriptions.ISubscriptionsDirectory;
-import com.eve.broker.core.security.IAuthenticator;
 import com.eve.broker.persistence.MemorySubscriptionsRepository;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -28,7 +28,6 @@ import io.netty.handler.codec.mqtt.MqttVersion;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.eve.broker.core.NettyChannelAssertions.assertEqualsConnAck;
 import static io.netty.handler.codec.mqtt.MqttConnectReturnCode.*;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;

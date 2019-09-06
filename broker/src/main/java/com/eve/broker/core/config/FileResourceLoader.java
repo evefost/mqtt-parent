@@ -16,13 +16,13 @@
 
 package com.eve.broker.core.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -31,6 +31,7 @@ public class FileResourceLoader implements IResourceLoader {
     private static final Logger LOG = LoggerFactory.getLogger(FileResourceLoader.class);
 
     private final File defaultFile;
+
     private final String parentPath;
 
     public FileResourceLoader() {

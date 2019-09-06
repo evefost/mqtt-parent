@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.eve.mqtt.client2;
+package com.eve.mqtt.client;
 
 import io.netty.channel.ChannelHandlerContext;
 

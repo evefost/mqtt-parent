@@ -1,7 +1,7 @@
-package com.eve.mqtt.command;
+package com.eve.mqtt.client.command;
 
-import com.eve.mqtt.client2.RemotingContext;
-import com.eve.mqtt.common.handler.HandlerDispatcher;
+
+import com.eve.mqtt.client.RemotingContext;
 import io.netty.handler.codec.mqtt.MqttMessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +25,6 @@ public class PublishMessageHandler implements CommandHandler {
 
     @Override
     public void handleCommand(RemotingContext ctx, Object msg) throws Exception {
-        HandlerDispatcher.process(msg);
+
     }
 }

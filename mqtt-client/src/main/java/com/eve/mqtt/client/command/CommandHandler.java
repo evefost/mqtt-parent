@@ -1,7 +1,7 @@
-package com.eve.mqtt.command;
+package com.eve.mqtt.client.command;
 
 
-import com.eve.mqtt.client2.RemotingContext;
+import com.eve.mqtt.client.RemotingContext;
 
 public interface CommandHandler {
 

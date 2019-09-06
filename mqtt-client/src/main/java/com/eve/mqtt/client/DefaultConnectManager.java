@@ -1,7 +1,7 @@
-package com.eve.mqtt.client2;
+package com.eve.mqtt.client;
 
-import com.eve.mqtt.client.ClientOptions;
-import com.eve.mqtt.util.ClientUtils;
+
+import com.eve.mqtt.client.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

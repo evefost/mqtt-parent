@@ -1,7 +1,7 @@
-package com.eve.mqtt.command;
+package com.eve.mqtt.client.command;
 
-import com.eve.mqtt.client2.Connection;
-import com.eve.mqtt.client2.RemotingContext;
+import com.eve.mqtt.client.Connection;
+import com.eve.mqtt.client.RemotingContext;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
