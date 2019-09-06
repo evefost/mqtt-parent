@@ -30,7 +30,7 @@
   </appenders>
 
   <loggers>
-    <logger name="com.xie.mqtt" level="info"/>
+    <logger name="com.eve.mqtt" level="info"/>
     <Root level="warn">
       <AppenderRef ref="Console"/>
       <AppenderRef ref="RollingFile"/>

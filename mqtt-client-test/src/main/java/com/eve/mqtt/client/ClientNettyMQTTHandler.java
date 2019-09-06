@@ -40,7 +40,6 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
     public static final AttributeKey<MessageClient> ATTR_KEY_CLIENT_CHANNEL = AttributeKey
         .valueOf(ATTR_CLIENT_CHANNEL);
 
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object message) {
         MqttMessage msg = (MqttMessage) message;

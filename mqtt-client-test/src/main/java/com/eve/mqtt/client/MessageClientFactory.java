@@ -17,17 +17,15 @@
 package com.eve.mqtt.client;
 
 import com.eve.mqtt.common.SystemCmd;
-import com.eve.mqtt.util.ServerUtils;
+import com.eve.mqtt.util.ClientUtils;
 import com.sun.javafx.UnmodifiableArrayList;
 import io.netty.bootstrap.Bootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.eve.mqtt.common.Constants.SYSTEM_CONTROL_PATTERN;
@@ -77,11 +75,11 @@ public class MessageClientFactory {
         }
 
         ClientOptions options = commonOptions.clone();
-        ClientOptions.Node node = selectNode(commonOptions);
+        ClientOptions.Node node = ClientUtils.selectServerNode(commonOptions);
         options.setSelectNode(node);
         Bootstrap bootstrap = NettyClientStarter.getInstance().getBootstrap();
 
-        String clientId = createClientId();
+        String clientId = ClientUtils.createClientId();
         String pointTopic = "/topic/" + clientId;
         options.getTopics().add(pointTopic);
         if (speciallyTopics != null && !speciallyTopics.isEmpty()) {
@@ -132,38 +130,7 @@ public class MessageClientFactory {
     }
 
 
-    public static ClientOptions.Node selectNode(ClientOptions options) {
-        String node = null;
-        if (options.getBrokerNodes().length == 1) {
-            node = options.getBrokerNodes()[0];
-        } else {
-            Random random = new Random();
-            node = options.getBrokerNodes()[random.nextInt(options.getBrokerNodes().length)];
-        }
-        String[] nodeInfo = node.split(":");
-        ClientOptions.Node node1 = new ClientOptions.Node();
-        node1.setHost(nodeInfo[0]);
-        node1.setPort(Integer.parseInt(nodeInfo[1]));
-        return node1;
 
-    }
-
-
-    static String createClientId() {
-        if (isLoadHost) {
-            return host + "-" + clientCount.incrementAndGet();
-        }
-        try {
-            InetAddress localHostLANAddress = ServerUtils.getLocalHostLANAddress();
-            host = localHostLANAddress.getHostAddress();
-            isLoadHost = true;
-            String clientId = host + "-" + clientCount.incrementAndGet();
-            return clientId;
-        } catch (Exception e) {
-        }
-        String clientId = "device-" + clientCount.incrementAndGet();
-        return clientId;
-    }
 
     /**
      * 重置客户端，断开的连接将被收回，不会自动连
