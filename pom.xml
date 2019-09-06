@@ -16,7 +16,7 @@
         <module>mqtt-client-test</module>
         <module>mqtt-common</module>
         <module>monitor-server</module>
-        <module>mqtt-client</module>
+        <module>mqtt-remoting</module>
     </modules>
 
     <properties>
@@ -88,6 +88,11 @@
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
                 <version>1.2.7</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>1.7.25</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

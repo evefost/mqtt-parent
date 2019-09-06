@@ -19,7 +19,7 @@ import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 /**
  * @author Administrator
  */
-public class SendSubscriptHandler implements CommandHandler {
+final class SendSubscriptHandler implements CommandHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(SendSubscriptHandler.class);
 

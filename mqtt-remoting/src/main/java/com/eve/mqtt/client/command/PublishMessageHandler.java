@@ -10,9 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
- * @author Administrator
+ * @author xiey
  */
-public class PublishMessageHandler implements CommandHandler {
+ final class PublishMessageHandler implements CommandHandler {
 
     protected static final Logger logger = LoggerFactory.getLogger(PublishMessageHandler.class);
 

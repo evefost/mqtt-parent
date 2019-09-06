@@ -42,7 +42,7 @@ public class DefaultConnectFactory implements ConnectFactory {
         try {
             handler = new ClientMqttHandler();
             heartbeatHandler = new HeartbeatHandler();
-            ConnectEventHandler connectEventHandler = new ConnectEventHandler();
+            ClientConnectEventHandler connectEventHandler = new ClientConnectEventHandler();
             connectEventHandler.setConnectManager(null);
             bootstrap = new Bootstrap();
             bootstrap.group(workerGroup);

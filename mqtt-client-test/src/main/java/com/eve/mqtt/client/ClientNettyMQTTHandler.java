@@ -17,7 +17,6 @@
 package com.eve.mqtt.client;
 
 import com.eve.mqtt.common.handler.HandlerDispatcher;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.mqtt.*;
 import io.netty.util.AttributeKey;
@@ -67,11 +66,7 @@ public class ClientNettyMQTTHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private void increaseClients(MqttPublishMessage mqttMessage) {
-        ByteBuf byteBuf = mqttMessage.payload();
-        byte[] payload = new byte[byteBuf.readableBytes()];
-        byteBuf.readBytes(payload);
-    }
+
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
