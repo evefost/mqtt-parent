@@ -1,4 +1,4 @@
-package com.eve.mqtt.controller;
+package com.eve.mqtt.pojo;
 
 import java.util.ArrayList;
 import java.util.List;

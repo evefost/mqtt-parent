@@ -7,10 +7,13 @@ import com.eve.mqtt.common.EventCodeEnum;
 import com.eve.mqtt.common.proto.MqttMessagePb;
 import com.eve.mqtt.common.proto.ServerNotifyPb;
 import com.eve.mqtt.mq.SessionManager;
+import com.eve.mqtt.pojo.Page;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttMessageBuilders;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttQoS;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Created by xieyang on 19/3/30.
  */
+@Api(value = "设备管理",tags = "设备管理")
 @RestController
 @RequestMapping("admin")
 public class ManagerController {
@@ -37,6 +41,7 @@ public class ManagerController {
     @Autowired
     private SessionManager sessionManager;
 
+    @ApiOperation(value = "当前在线设备列表")
     @GetMapping("/sessions/ByPage")
     Page<SessionClient> getSessionsByPage(int currentPage, int pageSize)  {
 
@@ -77,6 +82,7 @@ public class ManagerController {
      * 模拟消息发送
      * @return
      */
+    @ApiOperation(value = "模拟消息发送")
     @GetMapping("/send/notify")
     boolean notifyClient() {
         ConcurrentMap<String, Session> sessions = sessionManager.getSessions();

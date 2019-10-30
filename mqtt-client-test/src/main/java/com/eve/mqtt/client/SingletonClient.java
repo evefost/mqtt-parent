@@ -17,6 +17,7 @@
 package com.eve.mqtt.client;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 
 import java.util.ArrayList;
@@ -67,7 +68,11 @@ public class SingletonClient extends AbstractMessageClient {
 
     @Override
     public void onReceived(String topic,MqttPublishMessage msg) {
-
+        ByteBuf byteBuf =  msg.payload();
+        byte[] payload = new byte[byteBuf.readableBytes()];
+        byteBuf.readBytes(payload);
+        String content = new String(payload);
+        logger.info("消息内容:{}",content);
     }
 
 
