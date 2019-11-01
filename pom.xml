@@ -3,7 +3,12 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-parent</artifactId>
+        <version>1.5.10.RELEASE</version>
+        <relativePath>../spring-boot-parent</relativePath>
+    </parent>
 
     <groupId>com.xie</groupId>
     <artifactId>mqtt-parent</artifactId>
@@ -31,6 +36,7 @@
     <dependencyManagement>
 
         <dependencies>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter</artifactId>
@@ -43,7 +49,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.7</version>
+                <version>1.2.25</version>
             </dependency>
 
             <dependency>
@@ -87,7 +93,7 @@
             <dependency>
                 <groupId>com.alibaba</groupId>
                 <artifactId>fastjson</artifactId>
-                <version>1.2.7</version>
+                <version>1.2.25</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -119,13 +125,6 @@
             <scope>testCompile</scope>
         </dependency>
     </dependencies>
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>public</id>-->
-            <!--<name>Team Nexus Repository</name>-->
-            <!--<url>http://10.10.10.241:8088/nexus/content/groups/public/</url>-->
-            <!--<layout>default</layout>-->
-        <!--</repository>-->
-    <!--</repositories>-->
+
 
 </project>
