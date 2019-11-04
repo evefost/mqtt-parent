@@ -85,7 +85,7 @@ public class SessionRegistry {
         if (!pool.containsKey(clientId)) {
             // case 1
             final Session newSession = createNewSession(mqttConnection, msg, clientId);
-
+            newSession.setConnectStart(System.currentTimeMillis());
             // publish the session
             final Session previous = pool.putIfAbsent(clientId, newSession);
             final boolean success = previous == null;

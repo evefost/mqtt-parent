@@ -59,7 +59,7 @@ public class ManagerController {
         for(Session s:items){
             SessionClient c = new SessionClient();
             c.setClientId(s.getClientID());
-
+            c.setConnectStart(s.getConnectStart());
             List<Subscription> subscriptions = s.getSubscriptions();
             List<String> topics = new ArrayList<>(subscriptions.size());
             for (Subscription sub:subscriptions) {

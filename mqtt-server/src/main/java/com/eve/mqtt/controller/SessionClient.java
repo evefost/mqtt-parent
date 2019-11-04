@@ -1,29 +1,22 @@
 package com.eve.mqtt.controller;
 
+import lombok.Data;
+
 import java.util.List;
 
 /**
- * Created by xieyang on 19/3/31.
+ *
+ * @author xieyang
+ * @date 19/3/31
  */
+@Data
 public class SessionClient {
 
    private String clientId;
 
+    private long connectStart;
+
    private List<String> topics;
 
-    public String getClientId() {
-        return clientId;
-    }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public List<String> getTopics() {
-        return topics;
-    }
-
-    public void setTopics(List<String> topics) {
-        this.topics = topics;
-    }
 }

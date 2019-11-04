@@ -88,6 +88,8 @@ public class Session {
     private final String clientId;
     private boolean clean;
     private Will will;
+    private long connectStart;
+
     private Queue<SessionRegistry.EnqueuedMessage> sessionQueue;
     private final AtomicReference<SessionStatus> status = new AtomicReference<>(SessionStatus.DISCONNECTED);
     private MQTTConnection mqttConnection;
@@ -111,6 +113,14 @@ public class Session {
     void update(boolean clean, Will will) {
         this.clean = clean;
         this.will = will;
+    }
+
+    public long getConnectStart() {
+        return connectStart;
+    }
+
+    public void setConnectStart(long connectStart) {
+        this.connectStart = connectStart;
     }
 
     void markConnected() {
