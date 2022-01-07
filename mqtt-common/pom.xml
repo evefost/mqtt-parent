@@ -17,7 +17,7 @@
   <properties>
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <proto.version>3.6.0</proto.version>
+    <proto.version>3.16.1</proto.version>
     <io.netty.version>4.1.29.Final</io.netty.version>
   </properties>
 
