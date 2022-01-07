@@ -21,7 +21,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
-    <proto.version>3.6.0</proto.version>
+    <proto.version>3.16.1</proto.version>
   </properties>
 
 
